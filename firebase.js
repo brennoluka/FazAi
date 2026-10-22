@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
 import {
   getAuth,
   getReactNativePersistence,
@@ -14,6 +15,7 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const chavesObrigatorias = [
@@ -28,9 +30,19 @@ export const firebaseConfigurado = chavesObrigatorias.every(
 );
 
 let auth = null;
+let analytics = null;
 
 if (firebaseConfigurado) {
   const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    try {
+      analytics = getAnalytics(app);
+    } catch (_erro) {
+      // O Analytics é opcional e não deve impedir o login caso não esteja disponível.
+      analytics = null;
+    }
+  }
 
   try {
     auth = Platform.OS === 'web'
@@ -44,4 +56,4 @@ if (firebaseConfigurado) {
   }
 }
 
-export { auth };
+export { analytics, auth };
