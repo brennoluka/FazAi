@@ -39,7 +39,6 @@ if (firebaseConfigurado) {
     try {
       analytics = getAnalytics(app);
     } catch (_erro) {
-      // O Analytics é opcional e não deve impedir o login caso não esteja disponível.
       analytics = null;
     }
   }
@@ -51,7 +50,6 @@ if (firebaseConfigurado) {
           persistence: getReactNativePersistence(AsyncStorage),
         });
   } catch (_erro) {
-    // O Fast Refresh pode tentar registrar o Auth mais de uma vez.
     auth = getAuth(app);
   }
 }
