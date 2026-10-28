@@ -16,8 +16,9 @@ import {
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import Autenticacao from './telas/autenticacao';
+import Perfil from './telas/perfil';
 import { auth } from './firebase';
 import { ampliarServicos, servicos } from './dados/servicos';
 
@@ -233,19 +234,6 @@ function Atividade() {
   );
 }
 
-function Perfil({ usuario }) {
-  const navigation = useNavigation();
-  const [saindo, setSaindo] = useState(false);
-  async function sair() {
-    setSaindo(true);
-    try { await signOut(auth); navigation.navigate('Inicio'); } finally { setSaindo(false); }
-  }
-  if (!usuario) {
-    return <SafeAreaView style={styles.tela}><View style={styles.perfilConteudo}><Logo /><Text style={styles.tituloPagina}>Seu perfil</Text><Text style={styles.textoPagina}>Entre para acompanhar suas atividades e publicar no FazAí.</Text><Pressable style={styles.botaoPrincipal} onPress={() => navigation.navigate('Entrar')}><Text style={styles.botaoPrincipalTexto}>Entrar ou criar conta</Text></Pressable></View><StatusBar style="dark" /></SafeAreaView>;
-  }
-  return <SafeAreaView style={styles.tela}><ScrollView contentContainerStyle={styles.perfilConteudo}><Logo /><View style={styles.perfilCard}><View style={styles.avatar}><Text style={styles.avatarTexto}>{(usuario.displayName || usuario.email || 'U').charAt(0).toUpperCase()}</Text></View><Text style={styles.tituloPagina}>{usuario.displayName || 'Usuário FazAí'}</Text><Text style={styles.email}>{usuario.email}</Text><Text style={styles.status}>Conta conectada com Firebase</Text><Pressable style={styles.botaoSair} onPress={sair} disabled={saindo}><Text style={styles.botaoSairTexto}>{saindo ? 'Saindo...' : 'Sair da conta'}</Text></Pressable></View></ScrollView><StatusBar style="dark" /></SafeAreaView>;
-}
-
 function AbaIcone({ nome, ativo }) {
   const icones = { Inicio: '⌂', Buscar: '⌕', Publicar: '+', Atividade: '♡', Perfil: '♙' };
   return <Text style={[styles.abaIcone, ativo && styles.abaAtiva]}>{icones[nome]}</Text>;
@@ -323,14 +311,6 @@ const styles = StyleSheet.create({
   botaoPrincipal: { minHeight: 52, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, borderRadius: 12, backgroundColor: cores.lima },
   botaoPrincipalTexto: { color: cores.texto, fontSize: 14, fontWeight: '800' },
   nota: { marginTop: 18, color: '#9AA49B', fontSize: 11, textAlign: 'center' },
-  perfilConteudo: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  perfilCard: { width: '100%', maxWidth: 360, alignItems: 'center', marginTop: 20, padding: 26, borderRadius: 20, backgroundColor: '#FFFFFF' },
-  avatar: { width: 76, height: 76, alignItems: 'center', justifyContent: 'center', marginBottom: 16, borderRadius: 38, backgroundColor: cores.lima },
-  avatarTexto: { color: cores.verde, fontSize: 30, fontWeight: '800' },
-  email: { marginTop: 6, color: cores.apoio, fontSize: 14 },
-  status: { marginTop: 14, color: cores.verde, fontSize: 12, fontWeight: '700' },
-  botaoSair: { marginTop: 22, paddingVertical: 12, paddingHorizontal: 22, borderRadius: 12, backgroundColor: '#FDE5DE' },
-  botaoSairTexto: { color: '#B94D35', fontSize: 14, fontWeight: '800' },
   tabBar: { height: Platform.OS === 'ios' ? 84 : 68, paddingTop: 5, paddingBottom: Platform.OS === 'ios' ? 20 : 7, borderTopWidth: 1, borderTopColor: '#E7E9E1', backgroundColor: '#FFFFFF' },
   tabLabel: { fontSize: 10, fontWeight: '700' },
   abaIcone: { color: '#91A096', fontSize: 23, lineHeight: 25 },
