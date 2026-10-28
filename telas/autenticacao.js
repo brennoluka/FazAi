@@ -85,7 +85,7 @@ export default function Autenticacao({ modo = 'login' }) {
       } else {
         await signInWithEmailAndPassword(auth, emailNormalizado, senha);
       }
-      navigation.navigate('Perfil');
+      navigation.navigate('Principal', { screen: 'Perfil' });
     } catch (erro) {
       setMensagem(mensagemDoFirebase(erro));
     } finally {
@@ -128,10 +128,10 @@ export default function Autenticacao({ modo = 'login' }) {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.topo}>
-            <Pressable onPress={() => navigation.navigate('Início')} accessibilityRole="button" accessibilityLabel="Voltar ao início">
+            <Pressable onPress={() => navigation.navigate('Principal')} accessibilityRole="button" accessibilityLabel="Voltar ao início">
               <Text style={styles.marca}>faz<Text style={styles.coral}>aí.</Text></Text>
             </Pressable>
-            <Pressable onPress={() => navigation.navigate('Início')} style={styles.voltar}>
+            <Pressable onPress={() => navigation.navigate('Principal')} style={styles.voltar}>
               <Text style={styles.voltarTexto}>‹  Início</Text>
             </Pressable>
           </View>
