@@ -42,3 +42,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Estado local do Expo
+.expo/
+
+# Estado local do Expo
+.expo/
+
+.expo/
+.expo/
+.expo/
