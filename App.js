@@ -215,6 +215,24 @@ function Publicar({ usuario }) {
   );
 }
 
+function Atividade() {
+  return (
+    <SafeAreaView style={styles.tela}>
+      <ScrollView contentContainerStyle={styles.perfilConteudo} showsVerticalScrollIndicator={false}>
+        <Logo />
+        <Text style={styles.tituloPagina}>Sua atividade</Text>
+        <Text style={styles.textoPagina}>Quando você pedir um serviço ou publicar uma necessidade, tudo aparecerá aqui.</Text>
+        <View style={styles.atividadeCard}>
+          <Text style={styles.atividadeIcone}>♡</Text>
+          <Text style={styles.atividadeTitulo}>Nada por aqui ainda</Text>
+          <Text style={styles.atividadeTexto}>Explore os serviços e comece quando quiser.</Text>
+        </View>
+      </ScrollView>
+      <StatusBar style="dark" />
+    </SafeAreaView>
+  );
+}
+
 function Perfil({ usuario }) {
   const navigation = useNavigation();
   const [saindo, setSaindo] = useState(false);
@@ -229,7 +247,7 @@ function Perfil({ usuario }) {
 }
 
 function AbaIcone({ nome, ativo }) {
-  const icones = { Inicio: '⌂', Buscar: '⌕', Publicar: '+', Perfil: '♙' };
+  const icones = { Inicio: '⌂', Buscar: '⌕', Publicar: '+', Atividade: '♡', Perfil: '♙' };
   return <Text style={[styles.abaIcone, ativo && styles.abaAtiva]}>{icones[nome]}</Text>;
 }
 
@@ -238,6 +256,7 @@ function Abas({ usuario }) {
     <Tabs.Screen name="Inicio" options={{ title: 'Início' }}>{() => <Inicio usuario={usuario} />}</Tabs.Screen>
     <Tabs.Screen name="Buscar" options={{ title: 'Buscar' }}>{() => <Buscar usuario={usuario} />}</Tabs.Screen>
     <Tabs.Screen name="Publicar" options={{ title: 'Publicar' }}>{() => <Publicar usuario={usuario} />}</Tabs.Screen>
+    <Tabs.Screen name="Atividade" options={{ title: 'Atividade' }}>{() => <Atividade />}</Tabs.Screen>
     <Tabs.Screen name="Perfil" options={{ title: 'Perfil' }}>{() => <Perfil usuario={usuario} />}</Tabs.Screen>
   </Tabs.Navigator>;
 }
@@ -288,6 +307,10 @@ const styles = StyleSheet.create({
   vazio: { alignItems: 'center', padding: 32 },
   vazioTitulo: { color: cores.texto, fontSize: 17, fontWeight: '800' },
   vazioTexto: { marginTop: 8, color: cores.apoio, fontSize: 13, textAlign: 'center' },
+  atividadeCard: { width: '100%', maxWidth: 360, alignItems: 'center', marginTop: 28, padding: 28, borderWidth: 1, borderColor: cores.borda, borderRadius: 18, backgroundColor: '#FFFFFF' },
+  atividadeIcone: { color: cores.coral, fontSize: 36 },
+  atividadeTitulo: { marginTop: 12, color: cores.texto, fontSize: 17, fontWeight: '800' },
+  atividadeTexto: { maxWidth: 270, marginTop: 7, color: cores.apoio, fontSize: 13, lineHeight: 19, textAlign: 'center' },
   publicarConteudo: { flexGrow: 1, padding: 18, paddingBottom: 30 },
   publicarIntro: { marginBottom: 22 },
   tituloPagina: { marginTop: 10, color: cores.texto, fontSize: 27, lineHeight: 33, fontWeight: '800', textAlign: 'center' },
