@@ -17,6 +17,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, firebaseConfigurado } from '../firebase';
 import { salvarDadosContato } from '../dados/perfilUsuario';
 import Logo from '../componentes/Logo';
+import CampoEnderecoCep from '../componentes/CampoEnderecoCep';
 import { useApp } from '../context/AppContext';
 
 function celularValido(valor) {
@@ -131,7 +132,7 @@ export default function CadastroPrestador() {
           <Text style={styles.titulo}>Crie seu perfil de prestador.</Text>
           <Text style={styles.descricao}>Mostre seu trabalho, receba pedidos e construa sua reputação no FazAí.</Text>
           {campo('Seu nome ou negócio', 'Ex.: Dani Oliveira', nome, setNome, { autoCapitalize: 'words', textContentType: 'name' })}
-          {campo('Seu endereço completo', 'Rua, número, bairro, cidade e estado', endereco, setEndereco, { autoCapitalize: 'words', textContentType: 'streetAddressLine1', multiline: true })}
+          <CampoEnderecoCep onChangeText={setEndereco} />
           {campo('Seu celular com DDD', '(11) 91234-5678', celular, setCelular, { keyboardType: 'phone-pad', textContentType: 'telephoneNumber' })}
           {campo('Seu e-mail', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', autoCapitalize: 'none', textContentType: 'emailAddress' })}
           {campo('Senha', 'Pelo menos 8 caracteres', senha, setSenha, { secureTextEntry: true, textContentType: 'newPassword' })}

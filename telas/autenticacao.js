@@ -19,6 +19,7 @@ import {
 } from 'firebase/auth';
 import { auth, firebaseConfigurado } from '../firebase';
 import Logo from '../componentes/Logo';
+import CampoEnderecoCep from '../componentes/CampoEnderecoCep';
 import { useApp } from '../context/AppContext';
 import { salvarDadosContato } from '../dados/perfilUsuario';
 
@@ -164,7 +165,7 @@ export default function Autenticacao({ modo = 'login' }) {
             <Text style={[styles.titulo, { color: colors.text, fontSize: 27 * textScale }]}>{cadastro ? 'Crie sua conta.' : 'Que bom ter você por aqui.'}</Text>
             <Text style={[styles.descricao, { color: colors.muted, fontSize: 14 * textScale }]}>{cadastro ? 'Cadastre-se para encontrar serviços e profissionais no FazAí.' : 'Entre para continuar no FazAí.'}</Text>
             {cadastro && campo('Seu nome', 'Como podemos chamar você?', nome, setNome, { autoCapitalize: 'words', textContentType: 'name' })}
-            {cadastro && campo('Seu endereço completo', 'Rua, número, bairro, cidade e estado', endereco, setEndereco, { autoCapitalize: 'words', textContentType: 'streetAddressLine1', multiline: true })}
+            {cadastro && <CampoEnderecoCep onChangeText={setEndereco} />}
             {cadastro && campo('Seu celular com DDD', '(11) 91234-5678', celular, setCelular, { keyboardType: 'phone-pad', textContentType: 'telephoneNumber' })}
             {campo('Seu e-mail', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', textContentType: 'emailAddress' })}
             {campo('Sua senha', cadastro ? 'Crie uma senha com 8 caracteres' : 'Digite sua senha', senha, setSenha, { senha: true, textContentType: cadastro ? 'newPassword' : 'password' })}

@@ -28,12 +28,15 @@ Revisar a experiência do app Expo com foco em telas mais atrativas, acessibilid
 7. Nos cadastros de cliente e prestador, exigir endereço e celular e salvar esses dados localmente por UID.
 8. Enviar confirmação de e-mail após cadastro e bloquear as telas autenticadas até a conta ser confirmada; permitir verificar novamente e reenviar a mensagem.
 9. Validar bundle Web, dependências e navegação; sincronizar no GitHub quando solicitado.
+10. Nos dois cadastros, consultar o CEP no ViaCEP, preencher logradouro, bairro, cidade e UF, permitir revisar os campos e exigir o número antes de salvar o endereço.
 
 ## Estrutura
 
 - `App.js`: navegação, feed, busca e publicação; controla o acesso autenticado e ainda não verificado.
 - `context/AppContext.js`: tema, acessibilidade e pedidos locais demonstrativos.
 - `componentes/Logo.js`: marca compartilhada.
+- `componentes/CampoEnderecoCep.js`: campo de endereço reutilizável com consulta e preenchimento ViaCEP.
+- `dados/viacep.js`: validação de CEP e acesso JSON ao ViaCEP.
 - `telas/contratar.js`: seleção de dados, confirmação e pagamento demonstrativo.
 - `telas/pedidos.js`: acompanhamento e avaliação.
 - `telas/cadastroPrestador.js`: criação de conta de prestador e salvamento dos contatos.
