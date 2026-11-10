@@ -18,6 +18,8 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, firebaseConfigurado } from '../firebase';
+import Logo from '../componentes/Logo';
+import { useApp } from '../context/AppContext';
 
 const cores = {
   fundo: '#FBFCF6',
@@ -44,6 +46,7 @@ function mensagemDoFirebase(erro) {
 
 export default function Autenticacao({ modo = 'login' }) {
   const navigation = useNavigation();
+  const { colors, darkMode, textScale } = useApp();
   const cadastro = modo === 'cadastro';
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -96,10 +99,10 @@ export default function Autenticacao({ modo = 'login' }) {
   function campo(label, placeholder, value, setValue, opcoes = {}) {
     return (
       <View style={styles.grupo}>
-        <Text style={styles.rotulo}>{label}</Text>
-        <View style={styles.campoLinha}>
+        <Text style={[styles.rotulo, { color: colors.text, fontSize: 12 * textScale }]}>{label}</Text>
+        <View style={[styles.campoLinha, { borderColor: colors.border, backgroundColor: colors.surface }]}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: colors.text, fontSize: 14 * textScale }]}
             placeholder={placeholder}
             placeholderTextColor="#9AA49B"
             value={value}
@@ -123,22 +126,22 @@ export default function Autenticacao({ modo = 'login' }) {
   }
 
   return (
-    <SafeAreaView style={styles.tela}>
-      <StatusBar style="dark" />
+    <SafeAreaView style={[styles.tela, { backgroundColor: colors.background }]}>
+      <StatusBar style={darkMode ? 'light' : 'dark'} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.topo}>
             <Pressable onPress={() => navigation.navigate('Principal')} accessibilityRole="button" accessibilityLabel="Voltar ao início">
-              <Text style={styles.marca}>faz<Text style={styles.coral}>aí.</Text></Text>
+              <Logo compact />
             </Pressable>
             <Pressable onPress={() => navigation.navigate('Principal')} style={styles.voltar}>
               <Text style={styles.voltarTexto}>‹  Início</Text>
             </Pressable>
           </View>
-          <View style={styles.cartao}>
-            <Text style={styles.sobretitulo}>{cadastro ? 'CRIE SUA CONTA' : 'ACESSO À SUA CONTA'}</Text>
-            <Text style={styles.titulo}>{cadastro ? 'Crie sua conta.' : 'Que bom ter você por aqui.'}</Text>
-            <Text style={styles.descricao}>{cadastro ? 'Cadastre-se para encontrar serviços e profissionais no FazAí.' : 'Entre para continuar no FazAí.'}</Text>
+          <View style={[styles.cartao, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.sobretitulo, { color: colors.muted, fontSize: 10 * textScale }]}>{cadastro ? 'CRIE SUA CONTA' : 'ACESSO À SUA CONTA'}</Text>
+            <Text style={[styles.titulo, { color: colors.text, fontSize: 27 * textScale }]}>{cadastro ? 'Crie sua conta.' : 'Que bom ter você por aqui.'}</Text>
+            <Text style={[styles.descricao, { color: colors.muted, fontSize: 14 * textScale }]}>{cadastro ? 'Cadastre-se para encontrar serviços e profissionais no FazAí.' : 'Entre para continuar no FazAí.'}</Text>
             {cadastro && campo('Seu nome', 'Como podemos chamar você?', nome, setNome, { autoCapitalize: 'words', textContentType: 'name' })}
             {campo('Seu e-mail', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', textContentType: 'emailAddress' })}
             {campo('Sua senha', cadastro ? 'Crie uma senha com 8 caracteres' : 'Digite sua senha', senha, setSenha, { senha: true, textContentType: cadastro ? 'newPassword' : 'password' })}
@@ -153,6 +156,9 @@ export default function Autenticacao({ modo = 'login' }) {
                 <Text style={styles.link}>{cadastro ? 'Entrar' : 'Cadastre-se'}</Text>
               </Pressable>
             </View>
+            <Pressable accessibilityRole="button" onPress={() => navigation.navigate('CadastroPrestador')} style={styles.prestadorLink}>
+              <Text style={[styles.link, { color: colors.primary }]}>Quero oferecer serviços</Text>
+            </Pressable>
           </View>
           <Text style={styles.nota}>Seus dados, sempre em boas mãos.</Text>
         </ScrollView>
@@ -188,5 +194,6 @@ const styles = StyleSheet.create({
   rodapeConta: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginTop: 19 },
   rodapeTexto: { color: cores.apoio, fontSize: 13 },
   link: { color: cores.verde, fontSize: 13, fontWeight: '800', textDecorationLine: 'underline' },
+  prestadorLink: { alignItems: 'center', paddingTop: 16 },
   nota: { alignSelf: 'center', marginTop: 18, color: '#9AA49B', fontSize: 11 },
 });
