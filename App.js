@@ -17,6 +17,7 @@ import Logo from './componentes/Logo';
 import { AppProvider, useApp } from './context/AppContext';
 import { auth } from './firebase';
 import { ampliarServicos, servicos } from './dados/servicos';
+import VerificacaoEmail from './telas/verificacaoEmail';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -61,7 +62,62 @@ function Buscar({ usuario }) {
 function AbaAcao({ usuario, isPrestador }) { const navigation = useNavigation(); if (!usuario) return <SafeAreaView style={makeStyles(useApp().colors, useApp().textScale).tela}><View style={makeStyles(useApp().colors, useApp().textScale).semLoginAcao}><Text style={makeStyles(useApp().colors, useApp().textScale).acaoIcone}>+</Text><Text style={makeStyles(useApp().colors, useApp().textScale).acaoTitulo}>{isPrestador ? 'Publique seu serviço' : 'Peça ajuda'}</Text><Text style={makeStyles(useApp().colors, useApp().textScale).acaoTexto}>Crie uma conta para publicar e participar da comunidade FazAí.</Text><Pressable accessibilityRole="button" onPress={() => navigation.getParent()?.navigate('Cadastro')} style={makeStyles(useApp().colors, useApp().textScale).botaoPrincipal}><Text style={makeStyles(useApp().colors, useApp().textScale).botaoPrincipalTexto}>Criar conta</Text></Pressable></View></SafeAreaView>; return <AcaoPrincipal isPrestador={isPrestador} usuario={usuario} />; }
 function AbaIcone({ nome, ativo }) { const { colors } = useApp(); const icones = { Inicio: '⌂', Buscar: '⌕', Acao: '+', Atividade: '♡', Perfil: '♙' }; return <Text style={{ color: ativo ? colors.primary : colors.muted, fontSize: 23, lineHeight: 25, fontWeight: ativo ? '900' : '500' }}>{icones[nome]}</Text>; }
 function Abas({ usuario, isPrestador }) { const { colors } = useApp(); return <Tabs.Navigator screenOptions={({ route }) => ({ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.muted, tabBarStyle: { height: Platform.OS === 'ios' ? 84 : 68, paddingTop: 5, paddingBottom: Platform.OS === 'ios' ? 20 : 7, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.tab }, tabBarLabelStyle: { fontSize: 10, fontWeight: '800' }, tabBarIcon: ({ focused }) => <AbaIcone nome={route.name} ativo={focused} /> })}><Tabs.Screen name="Inicio" options={{ title: 'Início' }}>{() => <Inicio usuario={usuario} />}</Tabs.Screen><Tabs.Screen name="Buscar" options={{ title: 'Buscar' }}>{() => <Buscar usuario={usuario} />}</Tabs.Screen><Tabs.Screen name="Acao" options={{ title: isPrestador ? 'Publicar' : 'Pedir ajuda' }}>{() => <AbaAcao usuario={usuario} isPrestador={isPrestador} />}</Tabs.Screen><Tabs.Screen name="Atividade" options={{ title: 'Pedidos' }}>{() => <Pedidos />}</Tabs.Screen><Tabs.Screen name="Perfil" options={{ title: 'Perfil' }}>{() => <Perfil usuario={usuario} />}</Tabs.Screen></Tabs.Navigator>; }
-function AppContent() { const [usuario, setUsuario] = useState(null); const [carregando, setCarregando] = useState(true); const { colors, prestadorAtivo, marcarPrestador } = useApp(); useEffect(() => { if (!auth) { setCarregando(false); return undefined; } return onAuthStateChanged(auth, async (usuarioAtual) => { setUsuario(usuarioAtual); if (usuarioAtual) { const cadastro = await AsyncStorage.getItem(`fazai:provider:${usuarioAtual.uid}`); marcarPrestador(Boolean(cadastro)); } else marcarPrestador(false); setCarregando(false); }); }, []); if (carregando) return <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}><Text style={{ color: colors.text }}>Carregando sua conta...</Text></SafeAreaView>; return <NavigationContainer><Stack.Navigator screenOptions={{ headerShown: false }}><Stack.Screen name="Principal">{() => <Abas usuario={usuario} isPrestador={prestadorAtivo} />}</Stack.Screen><Stack.Screen name="Entrar">{() => <Autenticacao modo="login" />}</Stack.Screen><Stack.Screen name="Cadastro">{() => <Autenticacao modo="cadastro" />}</Stack.Screen><Stack.Screen name="CadastroPrestador" component={CadastroPrestador} /><Stack.Screen name="Contratar" component={Contratar} /><Stack.Screen name="PerfilPrestador" component={PerfilPrestador} /><Stack.Screen name="Pedidos" component={Pedidos} /></Stack.Navigator></NavigationContainer>; }
+function AppContent() {
+  const [usuario, setUsuario] = useState(null);
+  const [emailVerificado, setEmailVerificado] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const { colors, prestadorAtivo, marcarPrestador } = useApp();
+
+  useEffect(() => {
+    if (!auth) {
+      setCarregando(false);
+      return undefined;
+    }
+
+    return onAuthStateChanged(auth, async (usuarioAtual) => {
+      setUsuario(usuarioAtual);
+      setEmailVerificado(Boolean(usuarioAtual?.emailVerified));
+      if (usuarioAtual) {
+        const cadastro = await AsyncStorage.getItem(`fazai:provider:${usuarioAtual.uid}`);
+        marcarPrestador(Boolean(cadastro));
+      } else {
+        marcarPrestador(false);
+      }
+      setCarregando(false);
+    });
+  }, []);
+
+  if (carregando) {
+    return <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}><Text style={{ color: colors.text }}>Carregando sua conta...</Text></SafeAreaView>;
+  }
+
+  if (usuario && !emailVerificado) {
+    return (
+      <VerificacaoEmail
+        usuario={usuario}
+        onVerificado={() => {
+          const usuarioAtual = auth?.currentUser || usuario;
+          setUsuario(usuarioAtual);
+          setEmailVerificado(true);
+        }}
+      />
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Principal">{() => <Abas usuario={usuario} isPrestador={prestadorAtivo} />}</Stack.Screen>
+        <Stack.Screen name="Entrar">{() => <Autenticacao modo="login" />}</Stack.Screen>
+        <Stack.Screen name="Cadastro">{() => <Autenticacao modo="cadastro" />}</Stack.Screen>
+        <Stack.Screen name="CadastroPrestador" component={CadastroPrestador} />
+        <Stack.Screen name="Contratar" component={Contratar} />
+        <Stack.Screen name="PerfilPrestador" component={PerfilPrestador} />
+        <Stack.Screen name="Pedidos" component={Pedidos} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
 export default function App() { return <AppProvider><AppContent /></AppProvider>; }
 
 const makeStyles = (c, scale = 1) => StyleSheet.create({ flex: { flex: 1 }, tela: { flex: 1, backgroundColor: c.background }, listaConteudo: { paddingHorizontal: 18, paddingBottom: 24 }, cabecalho: { paddingTop: 16, paddingBottom: 15 }, saudacao: { marginTop: 14, color: c.text, fontSize: 22 * scale, fontWeight: '900' }, hero: { padding: 22, marginBottom: 24, borderRadius: 24, backgroundColor: c.primary }, heroEyebrow: { color: c.lime, fontSize: 10 * scale, fontWeight: '900', letterSpacing: 1.1 }, heroTitulo: { maxWidth: 340, marginTop: 12, color: c.primaryText, fontSize: 27 * scale, lineHeight: 32 * scale, fontWeight: '900' }, heroTexto: { maxWidth: 320, marginTop: 9, color: c.primaryText, opacity: 0.84, fontSize: 14 * scale, lineHeight: 20 * scale }, secaoTitulo: { marginBottom: 12, color: c.text, fontSize: 18 * scale, fontWeight: '900' }, cardServico: { marginBottom: 13, padding: 17, borderWidth: 1, borderColor: c.border, borderRadius: 19, backgroundColor: c.surface }, cardTopo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, categoriaPill: { paddingHorizontal: 9, paddingVertical: 5, borderRadius: 8, backgroundColor: c.surfaceMuted }, categoriaTexto: { color: c.primary, fontSize: 11 * scale, fontWeight: '900' }, avaliacao: { color: c.warning, fontSize: 12 * scale, fontWeight: '900' }, cardTitulo: { marginTop: 12, color: c.text, fontSize: 18 * scale, fontWeight: '900' }, cardDescricao: { marginTop: 6, color: c.muted, fontSize: 13 * scale, lineHeight: 19 * scale }, cardRodape: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 16 }, profissional: { color: c.primary, fontSize: 12 * scale, fontWeight: '900', textDecorationLine: 'underline' }, local: { marginTop: 4, color: c.muted, fontSize: 11 * scale }, botaoPedir: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 11, backgroundColor: c.lime }, botaoPedirTexto: { color: '#203A30', fontSize: 12 * scale, fontWeight: '900' }, carregando: { paddingVertical: 18, color: c.muted, fontSize: 12 * scale, textAlign: 'center' }, fimFeed: { paddingVertical: 18, color: c.muted, fontSize: 12 * scale, textAlign: 'center' }, buscaIntro: { marginBottom: 15, color: c.muted, fontSize: 13 * scale, lineHeight: 19 * scale }, buscaLinha: { minHeight: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, borderWidth: 1, borderColor: c.border, borderRadius: 14, backgroundColor: c.surface }, buscaIcone: { marginRight: 10, color: c.primary, fontSize: 25 }, buscaInput: { flex: 1, minHeight: 48, color: c.text, fontSize: 14 * scale, outlineStyle: 'none' }, limpar: { color: c.primary, fontSize: 12 * scale, fontWeight: '900' }, filtrosAbrir: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 12, backgroundColor: c.surfaceMuted }, filtrosAbrirTexto: { color: c.primary, fontSize: 13 * scale, fontWeight: '900' }, painelFiltros: { marginTop: 10, padding: 15, borderWidth: 1, borderColor: c.border, borderRadius: 15, backgroundColor: c.surface }, filtroLabel: { marginTop: 4, marginBottom: 8, color: c.text, fontSize: 12 * scale, fontWeight: '900' }, filtrosLinha: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 }, filtro: { paddingHorizontal: 10, paddingVertical: 8, borderWidth: 1, borderColor: c.border, borderRadius: 10, backgroundColor: c.input }, filtroAtivo: { borderColor: c.primary, backgroundColor: c.lime }, filtroTexto: { color: c.text, fontSize: 12 * scale, fontWeight: '700' }, filtroTextoAtivo: { color: '#203A30', fontWeight: '900' }, filtroInput: { minHeight: 44, marginBottom: 12, paddingHorizontal: 12, borderWidth: 1, borderColor: c.border, borderRadius: 10, color: c.text, backgroundColor: c.input, fontSize: 13 * scale }, limparFiltros: { alignSelf: 'flex-start', paddingVertical: 5 }, limparFiltrosTexto: { color: c.coral, fontSize: 12 * scale, fontWeight: '800' }, resultadoTitulo: { marginTop: 20, marginBottom: 12, color: c.text, fontSize: 16 * scale, fontWeight: '900' }, vazio: { alignItems: 'center', padding: 32 }, vazioTitulo: { color: c.text, fontSize: 17 * scale, fontWeight: '900', textAlign: 'center' }, vazioTexto: { marginTop: 8, color: c.muted, fontSize: 13 * scale, textAlign: 'center' }, publicarConteudo: { flexGrow: 1, padding: 18, paddingBottom: 30 }, publicarIntro: { marginBottom: 22 }, tituloPagina: { marginTop: 10, color: c.text, fontSize: 27 * scale, lineHeight: 33 * scale, fontWeight: '900', textAlign: 'center' }, textoPagina: { maxWidth: 360, marginTop: 9, color: c.muted, fontSize: 14 * scale, lineHeight: 21 * scale, textAlign: 'center' }, formulario: { padding: 20, borderWidth: 1, borderColor: c.border, borderRadius: 18, backgroundColor: c.surface }, rotulo: { marginBottom: 7, color: c.text, fontSize: 12 * scale, fontWeight: '900' }, input: { minHeight: 50, marginBottom: 18, paddingHorizontal: 13, borderWidth: 1, borderColor: c.border, borderRadius: 11, color: c.text, backgroundColor: c.input, fontSize: 14 * scale, outlineStyle: 'none' }, inputGrande: { minHeight: 130, paddingTop: 13 }, mensagem: { marginBottom: 14, color: c.coral, fontSize: 13 * scale, lineHeight: 19 * scale }, botaoPrincipal: { minHeight: 52, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18, borderRadius: 12, backgroundColor: c.lime }, botaoPrincipalTexto: { color: '#203A30', fontSize: 14 * scale, fontWeight: '900' }, nota: { marginTop: 18, color: c.muted, fontSize: 11 * scale, textAlign: 'center' }, semLoginAcao: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 26 }, acaoIcone: { color: c.coral, fontSize: 48, fontWeight: '900' }, acaoTitulo: { marginTop: 14, color: c.text, fontSize: 23 * scale, fontWeight: '900' }, acaoTexto: { maxWidth: 330, marginTop: 8, color: c.muted, fontSize: 14 * scale, lineHeight: 21 * scale, textAlign: 'center' } });

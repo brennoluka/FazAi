@@ -20,6 +20,7 @@ import {
 import { auth, firebaseConfigurado } from '../firebase';
 import Logo from '../componentes/Logo';
 import { useApp } from '../context/AppContext';
+import { salvarDadosContato } from '../dados/perfilUsuario';
 
 const cores = {
   fundo: '#FBFCF6',
@@ -44,11 +45,18 @@ function mensagemDoFirebase(erro) {
   return mensagens[erro?.code] || 'Não foi possível concluir. Confira os dados e tente novamente.';
 }
 
+function celularValido(valor) {
+  const digitos = valor.replace(/\D/g, '');
+  return digitos.length >= 10 && digitos.length <= 13;
+}
+
 export default function Autenticacao({ modo = 'login' }) {
   const navigation = useNavigation();
   const { colors, darkMode, textScale } = useApp();
   const cadastro = modo === 'cadastro';
   const [nome, setNome] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [celular, setCelular] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
@@ -65,6 +73,14 @@ export default function Autenticacao({ modo = 'login' }) {
     }
     if (cadastro && !nome.trim()) {
       setMensagem('Digite seu nome para continuar.');
+      return;
+    }
+    if (cadastro && !endereco.trim()) {
+      setMensagem('Informe seu endereço completo.');
+      return;
+    }
+    if (cadastro && !celularValido(celular)) {
+      setMensagem('Digite um número de celular válido com DDD.');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
@@ -85,10 +101,13 @@ export default function Autenticacao({ modo = 'login' }) {
       if (cadastro) {
         const credencial = await createUserWithEmailAndPassword(auth, emailNormalizado, senha);
         await updateProfile(credencial.user, { displayName: nome.trim() });
+        await salvarDadosContato(credencial.user.uid, { endereco, celular });
       } else {
-        await signInWithEmailAndPassword(auth, emailNormalizado, senha);
+        const credencial = await signInWithEmailAndPassword(auth, emailNormalizado, senha);
+        if (credencial.user.emailVerified) {
+          navigation.navigate('Principal', { screen: 'Perfil' });
+        }
       }
-      navigation.navigate('Principal', { screen: 'Perfil' });
     } catch (erro) {
       setMensagem(mensagemDoFirebase(erro));
     } finally {
@@ -100,9 +119,9 @@ export default function Autenticacao({ modo = 'login' }) {
     return (
       <View style={styles.grupo}>
         <Text style={[styles.rotulo, { color: colors.text, fontSize: 12 * textScale }]}>{label}</Text>
-        <View style={[styles.campoLinha, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+        <View style={[styles.campoLinha, opcoes.multiline && styles.campoLinhaMultiline, { borderColor: colors.border, backgroundColor: colors.surface }]}>
           <TextInput
-            style={[styles.input, { color: colors.text, fontSize: 14 * textScale }]}
+            style={[styles.input, opcoes.multiline && styles.inputMultiline, { color: colors.text, fontSize: 14 * textScale }]}
             placeholder={placeholder}
             placeholderTextColor="#9AA49B"
             value={value}
@@ -110,6 +129,8 @@ export default function Autenticacao({ modo = 'login' }) {
             autoCapitalize={opcoes.autoCapitalize || 'none'}
             autoCorrect={false}
             keyboardType={opcoes.keyboardType || 'default'}
+            multiline={Boolean(opcoes.multiline)}
+            textAlignVertical={opcoes.multiline ? 'top' : 'center'}
             secureTextEntry={Boolean(opcoes.senha) && !mostrarSenha}
             textContentType={opcoes.textContentType}
             accessibilityLabel={label}
@@ -143,6 +164,8 @@ export default function Autenticacao({ modo = 'login' }) {
             <Text style={[styles.titulo, { color: colors.text, fontSize: 27 * textScale }]}>{cadastro ? 'Crie sua conta.' : 'Que bom ter você por aqui.'}</Text>
             <Text style={[styles.descricao, { color: colors.muted, fontSize: 14 * textScale }]}>{cadastro ? 'Cadastre-se para encontrar serviços e profissionais no FazAí.' : 'Entre para continuar no FazAí.'}</Text>
             {cadastro && campo('Seu nome', 'Como podemos chamar você?', nome, setNome, { autoCapitalize: 'words', textContentType: 'name' })}
+            {cadastro && campo('Seu endereço completo', 'Rua, número, bairro, cidade e estado', endereco, setEndereco, { autoCapitalize: 'words', textContentType: 'streetAddressLine1', multiline: true })}
+            {cadastro && campo('Seu celular com DDD', '(11) 91234-5678', celular, setCelular, { keyboardType: 'phone-pad', textContentType: 'telephoneNumber' })}
             {campo('Seu e-mail', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', textContentType: 'emailAddress' })}
             {campo('Sua senha', cadastro ? 'Crie uma senha com 8 caracteres' : 'Digite sua senha', senha, setSenha, { senha: true, textContentType: cadastro ? 'newPassword' : 'password' })}
             {cadastro && campo('Confirme sua senha', 'Digite a senha novamente', confirmacao, setConfirmacao, { senha: true, textContentType: 'newPassword', returnKeyType: 'done' })}
@@ -183,7 +206,9 @@ const styles = StyleSheet.create({
   grupo: { marginBottom: 14 },
   rotulo: { marginBottom: 7, color: cores.texto, fontSize: 12, fontWeight: '700' },
   campoLinha: { minHeight: 48, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 13, borderWidth: 1, borderColor: cores.borda, borderRadius: 11, backgroundColor: '#FFFFFF' },
+  campoLinhaMultiline: { minHeight: 84, alignItems: 'flex-start', paddingVertical: 11 },
   input: { minHeight: 46, flex: 1, color: cores.texto, fontSize: 14, outlineStyle: 'none' },
+  inputMultiline: { minHeight: 62, paddingTop: 0, textAlignVertical: 'top' },
   verSenha: { paddingHorizontal: 4, paddingVertical: 10 },
   verSenhaTexto: { color: cores.verde, fontSize: 12, fontWeight: '700' },
   mensagem: { marginBottom: 12, color: '#B94D35', fontSize: 13, lineHeight: 19 },
