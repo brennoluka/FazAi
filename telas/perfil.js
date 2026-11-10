@@ -81,8 +81,8 @@ export default function Perfil({ usuario }) {
           <Text style={styles.subtituloCartao}>Dados associados à sua conta FazAí.</Text>
           <View style={styles.lista}>
             <Linha rotulo="Nome" valor={usuario.displayName} styles={styles} />
-            <Linha rotulo="E-mail confirmado" valor={usuario.email} styles={styles} />
-            {dadosContato?.celular ? <Linha rotulo="Celular informado" valor={dadosContato.celular} styles={styles} /> : null}
+            <Linha rotulo="Email" valor={usuario.email} styles={styles} />
+            {dadosContato?.celular ? <Linha rotulo="Numero de contato" valor={dadosContato.celular} styles={styles} /> : null}
             {dadosContato?.endereco ? <Linha rotulo="Endereço" valor={dadosContato.endereco} styles={styles} /> : null}
             <Linha rotulo="Membro desde" valor={formatarData(usuario.metadata?.creationTime)} styles={styles} />
           </View>
