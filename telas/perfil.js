@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { carregarDadosContato } from '../dados/perfilUsuario';
-import Logo from '../componentes/Logo';
+import CabecalhoTela from '../componentes/CabecalhoTela';
 import { useApp } from '../context/AppContext';
 
 function formatarData(data) {
@@ -54,7 +54,7 @@ export default function Perfil({ usuario }) {
     return (
       <SafeAreaView style={styles.tela}>
         <View style={styles.semLogin}>
-          <Logo />
+          <CabecalhoTela rotulo="SUA CONTA" />
           <Text style={styles.titulo}>Seu perfil</Text>
           <Text style={styles.descricao}>Entre na sua conta para ver suas informações e acompanhar sua experiência no FazAí.</Text>
           <Pressable accessibilityRole="button" onPress={() => navigation.getParent()?.navigate('Entrar')} style={styles.botao}><Text style={styles.botaoTexto}>Entrar ou criar conta</Text></Pressable>
@@ -71,7 +71,7 @@ export default function Perfil({ usuario }) {
   return (
     <SafeAreaView style={styles.tela}>
       <ScrollView contentContainerStyle={styles.conteudo} showsVerticalScrollIndicator={false}>
-        <View style={styles.topo}><Logo compact /><Text style={styles.sobretitulo}>SUA CONTA</Text></View>
+        <CabecalhoTela rotulo="SUA CONTA" />
         <View style={styles.cabecalhoPerfil}>
           {usuario.photoURL ? <Image source={{ uri: usuario.photoURL }} style={styles.avatarImagem} accessibilityLabel={`Foto de ${nome}`} /> : <View style={styles.avatar}><Text style={styles.avatarTexto}>{inicial}</Text></View>}
           <View style={styles.identidade}><Text style={styles.ola}>Olá,</Text><Text style={styles.nome}>{nome}</Text><View style={styles.statusConta}><View style={styles.pontoAtivo} /><Text style={styles.statusTexto}>Conta ativa</Text></View></View>
