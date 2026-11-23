@@ -32,16 +32,16 @@ export default function Detalhes() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 22, backgroundColor: '#FFF7F2' },
+  container: { flex: 1, padding: 22, backgroundColor: '#F7F7F5' },
   intro: { marginTop: 12, marginBottom: 22 },
-  titulo: { color: '#21130F', fontSize: 26, fontWeight: '800' },
-  subtitulo: { marginTop: 7, color: '#7D6258', fontSize: 15, lineHeight: 22 },
+  titulo: { color: '#232323', fontSize: 26, fontWeight: '800' },
+  subtitulo: { marginTop: 7, color: '#6E706D', fontSize: 15, lineHeight: 22 },
   lista: { width: '100%', maxWidth: 560, alignSelf: 'center', gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FFE3D6' },
-  marcador: { width: 10, height: 42, marginRight: 14, borderRadius: 5, backgroundColor: '#FFB13B' },
+  card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F1EE' },
+  marcador: { width: 10, height: 42, marginRight: 14, borderRadius: 5, backgroundColor: '#E7B34A' },
   cardTexto: { flex: 1 },
-  item: { color: '#21130F', fontSize: 16, fontWeight: '700' },
-  descricao: { marginTop: 4, color: '#7D6258', fontSize: 13, lineHeight: 18 },
-  seta: { marginLeft: 10, color: '#E6292E', fontSize: 28 },
-  aviso: { maxWidth: 560, alignSelf: 'center', marginTop: 22, color: '#B58A7A', fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  item: { color: '#232323', fontSize: 16, fontWeight: '700' },
+  descricao: { marginTop: 4, color: '#6E706D', fontSize: 13, lineHeight: 18 },
+  seta: { marginLeft: 10, color: '#D7353A', fontSize: 28 },
+  aviso: { maxWidth: 560, alignSelf: 'center', marginTop: 22, color: '#969792', fontSize: 12, lineHeight: 18, textAlign: 'center' },
 });

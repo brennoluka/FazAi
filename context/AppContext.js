@@ -4,8 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const AppContext = createContext(null);
 
 const palettes = {
-  light: { background: '#FFF7F2', surface: '#FFFFFF', surfaceMuted: '#FFE3D6', text: '#21130F', logoText: '#000000', muted: '#7D6258', border: '#F4C8B8', primary: '#E6292E', primaryText: '#FFFFFF', lime: '#FFB13B', coral: '#F56A2A', warning: '#C94A20', tab: '#FFFFFF', input: '#FFFAF8' },
-  dark: { background: '#1B0B0B', surface: '#321313', surfaceMuted: '#51201A', text: '#FFF4EF', logoText: '#FFF4EF', muted: '#E3B9A8', border: '#8C382B', primary: '#FF5A52', primaryText: '#3A0B0B', lime: '#FFC857', coral: '#FF8A3D', warning: '#FFC857', tab: '#271010', input: '#421818' },
+  light: { background: '#F7F7F5', surface: '#FFFFFF', surfaceMuted: '#F0F1EE', text: '#232323', logoText: '#000000', muted: '#6E706D', border: '#D9DAD6', primary: '#D7353A', primaryText: '#FFFFFF', lime: '#E7B34A', coral: '#E86A45', warning: '#B85C28', tab: '#FFFFFF', input: '#FBFBFA' },
+  dark: { background: '#171717', surface: '#242424', surfaceMuted: '#333333', text: '#F5F5F3', logoText: '#F5F5F3', muted: '#B9BAB5', border: '#4A4A47', primary: '#F05A5F', primaryText: '#2A1010', lime: '#D9A33A', coral: '#FF8A66', warning: '#D9A33A', tab: '#202020', input: '#2D2D2D' },
 };
 
 export function AppProvider({ children }) {
