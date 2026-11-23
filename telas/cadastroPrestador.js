@@ -145,7 +145,7 @@ export default function CadastroPrestador() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
-      <StatusBar style={colors.background === '#0D1512' ? 'light' : 'dark'} />
+      <StatusBar style={colors.background === '#1C100A' ? 'light' : 'dark'} />
     </SafeAreaView>
   );
 }
@@ -164,7 +164,7 @@ const makeStyles = (c, scale) => StyleSheet.create({
   mensagem: { marginTop: 16, color: c.coral, fontSize: 13 * scale, lineHeight: 19 * scale },
   botao: { minHeight: 54, alignItems: 'center', justifyContent: 'center', marginTop: 22, borderRadius: 14, backgroundColor: c.lime },
   botaoDesativado: { opacity: 0.6 },
-  botaoTexto: { color: '#203A30', fontSize: 14 * scale, fontWeight: '900' },
+  botaoTexto: { color: '#3A2418', fontSize: 14 * scale, fontWeight: '900' },
   voltar: { alignItems: 'center', padding: 16 },
   voltarTexto: { color: c.primary, fontSize: 13 * scale, fontWeight: '800' },
 });

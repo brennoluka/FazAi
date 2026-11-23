@@ -110,7 +110,7 @@ export default function VerificacaoEmail({ usuario, onVerificado }) {
           disabled={checando || enviando}
           style={({ pressed }) => [estilos.botaoPrincipal, pressed && estilos.pressionado, (checando || enviando) && estilos.desativado]}
         >
-          {checando ? <ActivityIndicator color="#203A30" /> : <Text style={estilos.botaoPrincipalTexto}>Já confirmei meu e-mail</Text>}
+          {checando ? <ActivityIndicator color="#3A2418" /> : <Text style={estilos.botaoPrincipalTexto}>Já confirmei meu e-mail</Text>}
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -142,7 +142,7 @@ const makeStyles = (c, scale) => StyleSheet.create({
   mensagem: { maxWidth: 430, marginTop: 15, color: c.primary, fontSize: 12 * scale, lineHeight: 18 * scale, textAlign: 'center' },
   mensagemErro: { color: c.coral },
   botaoPrincipal: { minHeight: 52, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch', maxWidth: 430, marginTop: 22, paddingHorizontal: 16, borderRadius: 12, backgroundColor: c.lime },
-  botaoPrincipalTexto: { color: '#203A30', fontSize: 14 * scale, fontWeight: '900', textAlign: 'center' },
+  botaoPrincipalTexto: { color: '#3A2418', fontSize: 14 * scale, fontWeight: '900', textAlign: 'center' },
   botaoSecundario: { minHeight: 46, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch', maxWidth: 430, marginTop: 6, paddingHorizontal: 14 },
   botaoSecundarioTexto: { color: c.primary, fontSize: 13 * scale, fontWeight: '800', textAlign: 'center' },
   botaoSair: { padding: 14 },

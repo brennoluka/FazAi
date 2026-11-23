@@ -26,13 +26,13 @@ import { useApp } from '../context/AppContext';
 import { salvarDadosContato } from '../dados/perfilUsuario';
 
 const cores = {
-  fundo: '#FBFCF6',
-  verde: '#1D4636',
-  texto: '#203A30',
-  apoio: '#7D8980',
-  borda: '#E5EAE2',
-  lima: '#D5FA75',
-  coral: '#EF7655',
+  fundo: '#FFF7ED',
+  verde: '#C85A16',
+  texto: '#3A2418',
+  apoio: '#7C6658',
+  borda: '#F2D2B6',
+  lima: '#FFD2A6',
+  coral: '#F08A4B',
 };
 
 function mensagemDoFirebase(erro) {
@@ -139,7 +139,7 @@ export default function Autenticacao({ modo = 'login' }) {
           <TextInput
             style={[styles.input, opcoes.multiline && styles.inputMultiline, { color: colors.text, fontSize: 14 * textScale }]}
             placeholder={placeholder}
-            placeholderTextColor="#9AA49B"
+            placeholderTextColor="#A88C78"
             value={value}
             onChangeText={setValue}
             autoCapitalize={opcoes.autoCapitalize || 'none'}
@@ -205,7 +205,7 @@ export default function Autenticacao({ modo = 'login' }) {
       <Modal visible={recuperacaoAberta} transparent animationType="slide" onRequestClose={() => setRecuperacaoAberta(false)}>
         <View style={styles.fundoRecuperacao}><View style={[styles.cartaoRecuperacao, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.tituloRecuperacao, { color: colors.text }]}>Redefina sua senha</Text><Text style={[styles.descricaoRecuperacao, { color: colors.muted }]}>Informe seu e-mail e enviaremos um link seguro para criar uma nova senha.</Text>
-          <TextInput value={emailRecuperacao} onChangeText={setEmailRecuperacao} placeholder="voce@email.com" placeholderTextColor="#9AA49B" keyboardType="email-address" autoCapitalize="none" style={[styles.inputRecuperacao, { color: colors.text, borderColor: colors.border, backgroundColor: colors.input }]} accessibilityLabel="E-mail para recuperação" />
+          <TextInput value={emailRecuperacao} onChangeText={setEmailRecuperacao} placeholder="voce@email.com" placeholderTextColor="#A88C78" keyboardType="email-address" autoCapitalize="none" style={[styles.inputRecuperacao, { color: colors.text, borderColor: colors.border, backgroundColor: colors.input }]} accessibilityLabel="E-mail para recuperação" />
           <View style={styles.acoesRecuperacao}><Pressable onPress={() => setRecuperacaoAberta(false)} style={[styles.cancelarRecuperacao, { borderColor: colors.border }]}><Text style={{ color: colors.text, fontWeight: '800' }}>Cancelar</Text></Pressable><Pressable onPress={recuperarSenha} disabled={enviandoRecuperacao} style={[styles.enviarRecuperacao, { backgroundColor: colors.lime }]}><Text style={styles.enviarRecuperacaoTexto}>{enviandoRecuperacao ? 'Enviando...' : 'Enviar link'}</Text></Pressable></View>
         </View></View>
       </Modal>
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   cartaoRecuperacao: { padding: 24, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1 },
   tituloRecuperacao: { fontSize: 22, fontWeight: '900' }, descricaoRecuperacao: { marginTop: 8, lineHeight: 20 },
   inputRecuperacao: { minHeight: 50, marginTop: 18, paddingHorizontal: 14, borderWidth: 1, borderRadius: 11, fontSize: 15 }, acoesRecuperacao: { flexDirection: 'row', gap: 10, marginTop: 18 },
-  cancelarRecuperacao: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 12 }, enviarRecuperacao: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 12 }, enviarRecuperacaoTexto: { color: '#203A30', fontWeight: '900' },
+  cancelarRecuperacao: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 12 }, enviarRecuperacao: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 12 }, enviarRecuperacaoTexto: { color: '#3A2418', fontWeight: '900' },
   botao: { minHeight: 50, alignItems: 'center', justifyContent: 'center', marginTop: 5, borderRadius: 12, backgroundColor: cores.lima },
   botaoPressionado: { opacity: 0.82 },
   botaoDesativado: { opacity: 0.6 },
@@ -248,5 +248,5 @@ const styles = StyleSheet.create({
   rodapeTexto: { color: cores.apoio, fontSize: 13 },
   link: { color: cores.verde, fontSize: 13, fontWeight: '800', textDecorationLine: 'underline' },
   prestadorLink: { alignItems: 'center', paddingTop: 16 },
-  nota: { alignSelf: 'center', marginTop: 18, color: '#9AA49B', fontSize: 11 },
+  nota: { alignSelf: 'center', marginTop: 18, color: '#A88C78', fontSize: 11 },
 });
