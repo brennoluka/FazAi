@@ -19,7 +19,7 @@ function Linha({ rotulo, valor, styles }) {
 }
 
 function Preferencia({ titulo, descricao, valor, onChange, styles }) {
-  return <View style={styles.preferencia}><View style={styles.preferenciaTexto}><Text style={styles.preferenciaTitulo}>{titulo}</Text><Text style={styles.preferenciaDescricao}>{descricao}</Text></View><Switch accessibilityLabel={titulo} value={valor} onValueChange={onChange} trackColor={{ false: '#C7A68D', true: '#F08A4B' }} thumbColor={valor ? '#FFFFFF' : '#FFF7ED'} /></View>;
+  return <View style={styles.preferencia}><View style={styles.preferenciaTexto}><Text style={styles.preferenciaTitulo}>{titulo}</Text><Text style={styles.preferenciaDescricao}>{descricao}</Text></View><Switch accessibilityLabel={titulo} value={valor} onValueChange={onChange} trackColor={{ false: '#CFA092', true: '#F56A2A' }} thumbColor={valor ? '#FFFFFF' : '#FFF7F2'} /></View>;
 }
 
 export default function Perfil({ usuario }) {
@@ -120,13 +120,13 @@ const makeStyles = (c, scale) => StyleSheet.create({
   sobretitulo: { color: c.muted, fontSize: 10 * scale, fontWeight: '900', letterSpacing: 1.2 },
   cabecalhoPerfil: { flexDirection: 'row', alignItems: 'center', marginBottom: 25 },
   avatar: { width: 76, height: 76, alignItems: 'center', justifyContent: 'center', marginRight: 17, borderRadius: 38, backgroundColor: c.lime },
-  avatarTexto: { color: '#3A2418', fontSize: 30 * scale, fontWeight: '900' },
+  avatarTexto: { color: '#21130F', fontSize: 30 * scale, fontWeight: '900' },
   avatarImagem: { width: 76, height: 76, marginRight: 17, borderRadius: 38 },
   identidade: { flex: 1 },
   ola: { color: c.muted, fontSize: 14 * scale },
   nome: { marginTop: 2, color: c.text, fontSize: 25 * scale, lineHeight: 31 * scale, fontWeight: '900' },
   statusConta: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 8, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, backgroundColor: c.surfaceMuted },
-  pontoAtivo: { width: 7, height: 7, marginRight: 6, borderRadius: 4, backgroundColor: '#D96B2B' },
+  pontoAtivo: { width: 7, height: 7, marginRight: 6, borderRadius: 4, backgroundColor: '#E94D2F' },
   statusTexto: { color: c.primary, fontSize: 11 * scale, fontWeight: '800' },
   cartao: { marginBottom: 14, padding: 19, borderWidth: 1, borderColor: c.border, borderRadius: 18, backgroundColor: c.surface },
   tituloCartao: { color: c.text, fontSize: 17 * scale, fontWeight: '900' },
@@ -154,7 +154,7 @@ const makeStyles = (c, scale) => StyleSheet.create({
   titulo: { marginTop: 24, color: c.text, fontSize: 27 * scale, fontWeight: '900', textAlign: 'center' },
   descricao: { maxWidth: 350, marginTop: 9, color: c.muted, fontSize: 14 * scale, lineHeight: 21 * scale, textAlign: 'center' },
   botao: { minHeight: 52, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch', maxWidth: 360, marginTop: 22, borderRadius: 12, backgroundColor: c.lime },
-  botaoTexto: { color: '#3A2418', fontSize: 14 * scale, fontWeight: '900' },
+  botaoTexto: { color: '#21130F', fontSize: 14 * scale, fontWeight: '900' },
   linkBotao: { padding: 16 },
   linkTexto: { color: c.primary, fontSize: 13 * scale, fontWeight: '900' },
 });
