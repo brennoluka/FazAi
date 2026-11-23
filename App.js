@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -18,12 +18,13 @@ import { AppProvider, useApp } from './context/AppContext';
 import { auth } from './firebase';
 import { ampliarServicos, servicos } from './dados/servicos';
 import VerificacaoEmail from './telas/verificacaoEmail';
+import ModalMensagem from './componentes/ModalMensagem';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
 
-function pedirConta(navigation, objetivo = 'continuar') {
-  Alert.alert('Crie uma conta para continuar', `Você precisa estar logado para ${objetivo}.`, [{ text: 'Agora não', style: 'cancel' }, { text: 'Criar conta', onPress: () => navigation.getParent()?.navigate('Cadastro') }]);
+function pedirConta(navigation, mostrarFeedback, objetivo = 'continuar') {
+  mostrarFeedback('Crie uma conta para continuar', `Você precisa estar logado para ${objetivo}.`, 'info', () => navigation.getParent()?.navigate('Cadastro'));
 }
 function Cabecalho({ saudacao }) {
   const { colors, textScale } = useApp();
@@ -32,9 +33,9 @@ function Cabecalho({ saudacao }) {
 }
 function CardServico({ item, usuario }) {
   const navigation = useNavigation();
-  const { colors, textScale } = useApp();
+  const { colors, textScale, mostrarFeedback } = useApp();
   const styles = makeStyles(colors, textScale);
-  function contratar() { if (!usuario) return pedirConta(navigation, 'contratar um serviço'); navigation.getParent()?.navigate('Contratar', { service: item }); }
+  function contratar() { if (!usuario) return pedirConta(navigation, mostrarFeedback, 'contratar um serviço'); navigation.getParent()?.navigate('Contratar', { service: item }); }
   function abrirPerfil() { navigation.getParent()?.navigate('PerfilPrestador', { service: item }); }
   return <View style={styles.cardServico}><View style={styles.cardTopo}><View style={styles.categoriaPill}><Text style={styles.categoriaTexto}>{item.categoria}</Text></View><Text style={styles.avaliacao}>★ {item.avaliacao}</Text></View><Text style={styles.cardTitulo}>{item.titulo}</Text><Text style={styles.cardDescricao}>{item.descricao}</Text><View style={styles.cardRodape}><View><Pressable accessibilityRole="button" accessibilityLabel={`Ver perfil de ${item.profissional}`} onPress={abrirPerfil}><Text style={styles.profissional}>{item.profissional}</Text></Pressable><Text style={styles.local}>{item.cidade} · {item.preco}</Text></View><Pressable accessibilityRole="button" accessibilityLabel={`Contratar ${item.titulo}`} onPress={contratar} style={styles.botaoPedir}><Text style={styles.botaoPedirTexto}>Contratar</Text></Pressable></View></View>;
 }
@@ -66,7 +67,7 @@ function AppContent() {
   const [usuario, setUsuario] = useState(null);
   const [emailVerificado, setEmailVerificado] = useState(false);
   const [carregando, setCarregando] = useState(true);
-  const { colors, prestadorAtivo, marcarPrestador } = useApp();
+  const { colors, prestadorAtivo, marcarPrestador, feedback, fecharFeedback } = useApp();
 
   useEffect(() => {
     if (!auth) {
@@ -105,6 +106,7 @@ function AppContent() {
   }
 
   return (
+    <>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Principal">{() => <Abas usuario={usuario} isPrestador={prestadorAtivo} />}</Stack.Screen>
@@ -116,6 +118,8 @@ function AppContent() {
         <Stack.Screen name="Pedidos" component={Pedidos} />
       </Stack.Navigator>
     </NavigationContainer>
+    <ModalMensagem visible={Boolean(feedback)} titulo={feedback?.titulo} mensagem={feedback?.mensagem} tipo={feedback?.tipo} onClose={fecharFeedback} onConfirm={feedback?.confirmar} textoConfirmar={feedback?.confirmar ? 'Criar conta' : 'Entendi'} />
+    </>
   );
 }
 export default function App() { return <AppProvider><AppContent /></AppProvider>; }

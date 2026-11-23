@@ -9,12 +9,14 @@ import {
   Text,
   TextInput,
   View,
+  Modal,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
 import { auth, firebaseConfigurado } from '../firebase';
@@ -53,7 +55,7 @@ function celularValido(valor) {
 
 export default function Autenticacao({ modo = 'login' }) {
   const navigation = useNavigation();
-  const { colors, darkMode, textScale } = useApp();
+  const { colors, darkMode, textScale, mostrarFeedback } = useApp();
   const cadastro = modo === 'cadastro';
   const [nome, setNome] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -62,38 +64,39 @@ export default function Autenticacao({ modo = 'login' }) {
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [recuperacaoAberta, setRecuperacaoAberta] = useState(false);
+  const [emailRecuperacao, setEmailRecuperacao] = useState('');
+  const [enviandoRecuperacao, setEnviandoRecuperacao] = useState(false);
 
   async function enviar() {
-    setMensagem('');
     const emailNormalizado = email.trim().toLowerCase();
     if (!firebaseConfigurado) {
-      setMensagem('Configure as variáveis do Firebase no arquivo .env.local para ativar o acesso.');
+      mostrarFeedback('Firebase não configurado', 'Configure as variáveis do Firebase no arquivo .env.local para ativar o acesso.', 'erro');
       return;
     }
     if (cadastro && !nome.trim()) {
-      setMensagem('Digite seu nome para continuar.');
+      mostrarFeedback('Confira seus dados', 'Digite seu nome para continuar.', 'erro');
       return;
     }
     if (cadastro && !endereco.trim()) {
-      setMensagem('Informe seu endereço completo.');
+      mostrarFeedback('Confira seus dados', 'Informe seu endereço completo.', 'erro');
       return;
     }
     if (cadastro && !celularValido(celular)) {
-      setMensagem('Digite um número de celular válido com DDD.');
+      mostrarFeedback('Confira seus dados', 'Digite um número de celular válido com DDD.', 'erro');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
-      setMensagem('Digite um e-mail válido.');
+      mostrarFeedback('Confira seus dados', 'Digite um e-mail válido.', 'erro');
       return;
     }
     if (senha.length < 8) {
-      setMensagem('A senha precisa ter pelo menos 8 caracteres.');
+      mostrarFeedback('Confira sua senha', 'A senha precisa ter pelo menos 8 caracteres.', 'erro');
       return;
     }
     if (cadastro && senha !== confirmacao) {
-      setMensagem('As senhas não coincidem. Confira e tente de novo.');
+      mostrarFeedback('Confira sua senha', 'As senhas não coincidem. Confira e tente de novo.', 'erro');
       return;
     }
 
@@ -110,10 +113,22 @@ export default function Autenticacao({ modo = 'login' }) {
         }
       }
     } catch (erro) {
-      setMensagem(mensagemDoFirebase(erro));
+      mostrarFeedback('Não foi possível continuar', mensagemDoFirebase(erro), 'erro');
     } finally {
       setEnviando(false);
     }
+  }
+
+  async function recuperarSenha() {
+    const emailNormalizado = emailRecuperacao.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
+      mostrarFeedback('E-mail inválido', 'Digite um e-mail válido para receber o link de redefinição.', 'erro'); return;
+    }
+    if (!firebaseConfigurado) { mostrarFeedback('Firebase não configurado', 'Configure as variáveis do Firebase no arquivo .env.local para ativar o acesso.', 'erro'); return; }
+    setEnviandoRecuperacao(true);
+    try { await sendPasswordResetEmail(auth, emailNormalizado); setRecuperacaoAberta(false); mostrarFeedback('E-mail enviado', 'Enviamos um link para redefinir sua senha. Verifique também a pasta de spam.', 'sucesso'); }
+    catch (erro) { mostrarFeedback('Não foi possível enviar', mensagemDoFirebase(erro), 'erro'); }
+    finally { setEnviandoRecuperacao(false); }
   }
 
   function campo(label, placeholder, value, setValue, opcoes = {}) {
@@ -126,7 +141,7 @@ export default function Autenticacao({ modo = 'login' }) {
             placeholder={placeholder}
             placeholderTextColor="#9AA49B"
             value={value}
-            onChangeText={(texto) => { setValue(texto); setMensagem(''); }}
+            onChangeText={setValue}
             autoCapitalize={opcoes.autoCapitalize || 'none'}
             autoCorrect={false}
             keyboardType={opcoes.keyboardType || 'default'}
@@ -170,10 +185,10 @@ export default function Autenticacao({ modo = 'login' }) {
             {campo('Seu e-mail', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', textContentType: 'emailAddress' })}
             {campo('Sua senha', cadastro ? 'Crie uma senha com 8 caracteres' : 'Digite sua senha', senha, setSenha, { senha: true, textContentType: cadastro ? 'newPassword' : 'password' })}
             {cadastro && campo('Confirme sua senha', 'Digite a senha novamente', confirmacao, setConfirmacao, { senha: true, textContentType: 'newPassword', returnKeyType: 'done' })}
-            {mensagem ? <Text style={styles.mensagem} accessibilityLiveRegion="polite">{mensagem}</Text> : null}
             <Pressable style={({ pressed }) => [styles.botao, pressed && styles.botaoPressionado, enviando && styles.botaoDesativado]} onPress={enviar} disabled={enviando} accessibilityRole="button">
               <Text style={styles.botaoTexto}>{enviando ? 'Aguarde...' : cadastro ? 'Criar minha conta' : 'Entrar'}{!enviando ? '  →' : ''}</Text>
             </Pressable>
+            {!cadastro && <Pressable onPress={() => { setEmailRecuperacao(email); setRecuperacaoAberta(true); }} style={styles.esqueci}><Text style={[styles.link, { color: colors.primary }]}>Esqueci minha senha</Text></Pressable>}
             <View style={styles.rodapeConta}>
               <Text style={styles.rodapeTexto}>{cadastro ? 'Já tem uma conta? ' : 'Ainda não tem conta? '}</Text>
               <Pressable onPress={() => navigation.navigate(cadastro ? 'Entrar' : 'Cadastro')}>
@@ -187,6 +202,13 @@ export default function Autenticacao({ modo = 'login' }) {
           <Text style={styles.nota}>Seus dados, sempre em boas mãos.</Text>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Modal visible={recuperacaoAberta} transparent animationType="slide" onRequestClose={() => setRecuperacaoAberta(false)}>
+        <View style={styles.fundoRecuperacao}><View style={[styles.cartaoRecuperacao, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.tituloRecuperacao, { color: colors.text }]}>Redefina sua senha</Text><Text style={[styles.descricaoRecuperacao, { color: colors.muted }]}>Informe seu e-mail e enviaremos um link seguro para criar uma nova senha.</Text>
+          <TextInput value={emailRecuperacao} onChangeText={setEmailRecuperacao} placeholder="voce@email.com" placeholderTextColor="#9AA49B" keyboardType="email-address" autoCapitalize="none" style={[styles.inputRecuperacao, { color: colors.text, borderColor: colors.border, backgroundColor: colors.input }]} accessibilityLabel="E-mail para recuperação" />
+          <View style={styles.acoesRecuperacao}><Pressable onPress={() => setRecuperacaoAberta(false)} style={[styles.cancelarRecuperacao, { borderColor: colors.border }]}><Text style={{ color: colors.text, fontWeight: '800' }}>Cancelar</Text></Pressable><Pressable onPress={recuperarSenha} disabled={enviandoRecuperacao} style={[styles.enviarRecuperacao, { backgroundColor: colors.lime }]}><Text style={styles.enviarRecuperacaoTexto}>{enviandoRecuperacao ? 'Enviando...' : 'Enviar link'}</Text></Pressable></View>
+        </View></View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -212,7 +234,12 @@ const styles = StyleSheet.create({
   inputMultiline: { minHeight: 62, paddingTop: 0, textAlignVertical: 'top' },
   verSenha: { paddingHorizontal: 4, paddingVertical: 10 },
   verSenhaTexto: { color: cores.verde, fontSize: 12, fontWeight: '700' },
-  mensagem: { marginBottom: 12, color: '#B94D35', fontSize: 13, lineHeight: 19 },
+  esqueci: { alignItems: 'center', paddingTop: 16 },
+  fundoRecuperacao: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(5, 16, 11, 0.58)' },
+  cartaoRecuperacao: { padding: 24, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1 },
+  tituloRecuperacao: { fontSize: 22, fontWeight: '900' }, descricaoRecuperacao: { marginTop: 8, lineHeight: 20 },
+  inputRecuperacao: { minHeight: 50, marginTop: 18, paddingHorizontal: 14, borderWidth: 1, borderRadius: 11, fontSize: 15 }, acoesRecuperacao: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  cancelarRecuperacao: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 12 }, enviarRecuperacao: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 12 }, enviarRecuperacaoTexto: { color: '#203A30', fontWeight: '900' },
   botao: { minHeight: 50, alignItems: 'center', justifyContent: 'center', marginTop: 5, borderRadius: 12, backgroundColor: cores.lima },
   botaoPressionado: { opacity: 0.82 },
   botaoDesativado: { opacity: 0.6 },

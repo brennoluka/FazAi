@@ -16,6 +16,7 @@ export function AppProvider({ children }) {
   const [necessidades, setNecessidades] = useState([]);
   const [servicosPublicados, setServicosPublicados] = useState([]);
   const [prestadorAtivo, setPrestadorAtivo] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     AsyncStorage.multiGet(['fazai:dark', 'fazai:contrast', 'fazai:textScale', 'fazai:orders', 'fazai:needs', 'fazai:published-services']).then((entries) => {
@@ -39,12 +40,14 @@ export function AppProvider({ children }) {
   function criarNecessidade(necessidade) { const next = [{ ...necessidade, id: `necessidade-${Date.now()}`, criadoEm: new Date().toISOString(), status: 'aberta' }, ...necessidades]; setNecessidades(next); persist('fazai:needs', JSON.stringify(next)); }
   function publicarServico(servico) { const next = [{ ...servico, id: `servico-${Date.now()}`, criadoEm: new Date().toISOString(), status: 'ativo' }, ...servicosPublicados]; setServicosPublicados(next); persist('fazai:published-services', JSON.stringify(next)); }
   function marcarPrestador(valor) { setPrestadorAtivo(Boolean(valor)); }
+  function mostrarFeedback(titulo, mensagem, tipo = 'info', confirmar = null) { setFeedback({ titulo, mensagem, tipo, confirmar }); }
+  function fecharFeedback() { setFeedback(null); }
 
   const colors = useMemo(() => {
     const base = palettes[darkMode ? 'dark' : 'light'];
     return altoContraste ? { ...base, background: darkMode ? '#000000' : '#FFFFFF', surface: darkMode ? '#080808' : '#FFFFFF', text: '#FFFFFF', muted: '#FFFFFF', border: '#FFFFFF' } : base;
   }, [darkMode, altoContraste]);
-  const value = useMemo(() => ({ darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, alternarDarkMode, alternarContraste, alterarEscala, criarPedido, atualizarPedido, criarNecessidade, publicarServico, marcarPrestador }), [darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo]);
+  const value = useMemo(() => ({ darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, feedback, alternarDarkMode, alternarContraste, alterarEscala, criarPedido, atualizarPedido, criarNecessidade, publicarServico, marcarPrestador, mostrarFeedback, fecharFeedback }), [darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, feedback]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 

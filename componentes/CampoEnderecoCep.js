@@ -21,10 +21,9 @@ function textoDoErro(erro) {
 }
 
 export default function CampoEnderecoCep({ onChangeText }) {
-  const { colors, textScale } = useApp();
+  const { colors, textScale, mostrarFeedback } = useApp();
   const styles = makeStyles(colors, textScale);
   const [form, setForm] = useState(novoEndereco);
-  const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState(false);
   const [buscando, setBuscando] = useState(false);
   const cepAtual = useRef('');
@@ -40,7 +39,6 @@ export default function CampoEnderecoCep({ onChangeText }) {
     const next = { ...form, [campo]: valor };
     setForm(next);
     publicar(next);
-    setMensagem('');
     setErro(false);
   }
 
@@ -54,8 +52,7 @@ export default function CampoEnderecoCep({ onChangeText }) {
       const next = { ...novoEndereco(), cep: formatarCep(digitos) };
       setForm(next);
       publicar(next);
-      setMensagem('');
-      setErro(false);
+        setErro(false);
       setBuscando(false);
       return;
     }
@@ -68,7 +65,7 @@ export default function CampoEnderecoCep({ onChangeText }) {
     const cep = extrairDigitosCep(valorCep);
     if (cep.length !== 8) {
       setErro(true);
-      setMensagem('Digite um CEP com exatamente 8 números.');
+      mostrarFeedback('CEP inválido', 'Digite um CEP com exatamente 8 números.', 'erro');
       return;
     }
     if (cepEmConsulta.current === cep || ultimoCepConsultado.current === cep) return;
@@ -77,7 +74,7 @@ export default function CampoEnderecoCep({ onChangeText }) {
     cepEmConsulta.current = cep;
     setBuscando(true);
     setErro(false);
-    setMensagem('Consultando endereço...');
+    mostrarFeedback('Consultando endereço', 'Buscando os dados do CEP informado.', 'info');
     try {
       const dados = await consultarEnderecoPorCep(cep);
       if (consultaAtual.current !== idConsulta || cepAtual.current !== cep) return;
@@ -94,11 +91,11 @@ export default function CampoEnderecoCep({ onChangeText }) {
       ultimoCepConsultado.current = cep;
       publicar(next);
       setErro(false);
-      setMensagem('Endereço encontrado. Confira os campos e informe o número.');
+      mostrarFeedback('Endereço encontrado', 'Confira os campos preenchidos e informe o número da residência.', 'sucesso');
     } catch (erroConsulta) {
       if (consultaAtual.current !== idConsulta) return;
       setErro(true);
-      setMensagem(textoDoErro(erroConsulta));
+      mostrarFeedback('Não foi possível consultar', textoDoErro(erroConsulta), 'erro');
     } finally {
       if (consultaAtual.current === idConsulta) {
         cepEmConsulta.current = '';
@@ -145,7 +142,6 @@ export default function CampoEnderecoCep({ onChangeText }) {
       >
         {buscando ? <ActivityIndicator size="small" color={colors.primary} /> : <Text style={styles.botaoCepTexto}>Consultar CEP</Text>}
       </Pressable>
-      {mensagem ? <Text style={[styles.mensagem, erro ? styles.mensagemErro : styles.mensagemSucesso]} accessibilityLiveRegion="polite">{mensagem}</Text> : null}
       <View style={styles.linha}>
         {campo('Logradouro *', 'logradouro', 'Rua, avenida ou estrada', { coluna: true })}
       </View>

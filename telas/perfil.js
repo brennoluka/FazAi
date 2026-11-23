@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
@@ -24,7 +24,7 @@ function Preferencia({ titulo, descricao, valor, onChange, styles }) {
 
 export default function Perfil({ usuario }) {
   const navigation = useNavigation();
-  const { colors, darkMode, altoContraste, textScale, alternarDarkMode, alternarContraste, alterarEscala } = useApp();
+  const { mostrarFeedback, colors, darkMode, altoContraste, textScale, alternarDarkMode, alternarContraste, alterarEscala } = useApp();
   const styles = makeStyles(colors, textScale);
   const [saindo, setSaindo] = useState(false);
   const [dadosContato, setDadosContato] = useState(null);
@@ -44,7 +44,7 @@ export default function Perfil({ usuario }) {
       await signOut(auth);
       navigation.getParent()?.navigate('Inicio');
     } catch (_error) {
-      Alert.alert('Não foi possível sair', 'Tente novamente em instantes.');
+      mostrarFeedback('Não foi possível sair', 'Tente novamente em instantes.', 'erro');
     } finally {
       setSaindo(false);
     }

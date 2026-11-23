@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import Logo from '../componentes/Logo';
@@ -19,7 +19,7 @@ function Campo({ label, value, onChangeText, placeholder, styles, error, editabl
 
 export default function Contratar({ route }) {
   const navigation = useNavigation();
-  const { colors, criarPedido, textScale } = useApp();
+  const { colors, criarPedido, textScale, mostrarFeedback } = useApp();
   const service = route.params?.service || {};
   const styles = makeStyles(colors, textScale);
   const [form, setForm] = useState({ cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '', data: '' });
@@ -59,7 +59,7 @@ export default function Contratar({ route }) {
     const resultado = validar(); if (!resultado.valido) return;
     const endereco = `${form.logradouro}, ${form.numero}${form.complemento ? `, ${form.complemento}` : ''} — ${form.bairro}, ${form.cidade}/${form.uf} — CEP ${form.cep}`;
     criarPedido({ serviceId: service.id, titulo: service.titulo, profissional: service.profissional, preco: service.preco, endereco, data: form.data, metodo });
-    Alert.alert('Pedido criado', 'A próxima etapa é confirmar o pagamento demonstrativo.', [{ text: 'Ir para pedidos', onPress: () => navigation.navigate('Principal', { screen: 'Atividade' }) }]);
+    mostrarFeedback('Pedido criado', 'A próxima etapa é confirmar o pagamento demonstrativo.', 'sucesso', () => navigation.navigate('Principal', { screen: 'Atividade' }));
   }
   const dias = useMemo(() => diasDoMes(mesCalendario), [mesCalendario]);
   const mesLabel = mesCalendario.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });

@@ -36,42 +36,40 @@ export default function CadastroPrestador() {
   const [categoria, setCategoria] = useState('');
   const [cidade, setCidade] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
   const styles = makeStyles(colors, textScale);
 
   async function enviar() {
-    setMensagem('');
     if (!firebaseConfigurado) {
-      setMensagem('Configure o Firebase para ativar o cadastro.');
+      mostrarFeedback('Confira seus dados', 'Configure o Firebase para ativar o cadastro.', 'erro');
       return;
     }
     if (!nome.trim()) {
-      setMensagem('Informe seu nome ou o nome do seu negócio.');
+      mostrarFeedback('Confira seus dados', 'Informe seu nome ou o nome do seu negócio.', 'erro');
       return;
     }
     if (!endereco.trim()) {
-      setMensagem('Informe seu endereço completo.');
+      mostrarFeedback('Confira seus dados', 'Informe seu endereço completo.', 'erro');
       return;
     }
     if (!celularValido(celular)) {
-      setMensagem('Digite um número de celular válido com DDD.');
+      mostrarFeedback('Confira seus dados', 'Digite um número de celular válido com DDD.', 'erro');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setMensagem('Digite um e-mail válido, como voce@email.com.');
+      mostrarFeedback('Confira seus dados', 'Digite um e-mail válido, como voce@email.com.', 'erro');
       return;
     }
     if (senha.length < 8) {
-      setMensagem('A senha precisa ter pelo menos 8 caracteres.');
+      mostrarFeedback('Confira seus dados', 'A senha precisa ter pelo menos 8 caracteres.', 'erro');
       return;
     }
     if (!categoria.trim()) {
-      setMensagem('Informe qual serviço você oferece.');
+      mostrarFeedback('Confira seus dados', 'Informe qual serviço você oferece.', 'erro');
       return;
     }
     if (!cidade.trim()) {
-      setMensagem('Informe a cidade onde você atende.');
+      mostrarFeedback('Confira seus dados', 'Informe a cidade onde você atende.', 'erro');
       return;
     }
 
@@ -89,15 +87,15 @@ export default function CadastroPrestador() {
       marcarPrestador(true);
     } catch (error) {
       if (error?.code === 'auth/email-already-in-use') {
-        setMensagem('Este e-mail já está cadastrado. Tente entrar.');
+        mostrarFeedback('Confira seus dados', 'Este e-mail já está cadastrado. Tente entrar.', 'erro');
       } else if (error?.code === 'auth/invalid-email') {
-        setMensagem('Digite um e-mail válido.');
+        mostrarFeedback('Confira seus dados', 'Digite um e-mail válido.', 'erro');
       } else if (error?.code === 'auth/weak-password') {
-        setMensagem('A senha precisa ter pelo menos 8 caracteres.');
+        mostrarFeedback('Confira seus dados', 'A senha precisa ter pelo menos 8 caracteres.', 'erro');
       } else if (error?.code === 'auth/network-request-failed') {
-        setMensagem('Não foi possível conectar. Verifique sua internet.');
+        mostrarFeedback('Confira seus dados', 'Não foi possível conectar. Verifique sua internet.', 'erro');
       } else {
-        setMensagem('Não foi possível criar o perfil. Confira os dados e tente novamente.');
+        mostrarFeedback('Confira seus dados', 'Não foi possível criar o perfil. Confira os dados e tente novamente.', 'erro');
       }
     } finally {
       setEnviando(false);
@@ -113,7 +111,7 @@ export default function CadastroPrestador() {
           placeholder={placeholder}
           placeholderTextColor={colors.muted}
           value={value}
-          onChangeText={(texto) => { setValue(texto); setMensagem(''); }}
+          onChangeText={(texto) => { setValue(texto); mostrarFeedback('Confira seus dados', '', 'erro'); }}
           style={[styles.input, opcoes.multiline && styles.textarea]}
           multiline={Boolean(opcoes.multiline)}
           textAlignVertical={opcoes.multiline ? 'top' : 'center'}
@@ -139,7 +137,6 @@ export default function CadastroPrestador() {
           {campo('Especialidade', 'Ex.: limpeza residencial', categoria, setCategoria)}
           {campo('Cidade onde atende', 'Ex.: São Paulo, SP', cidade, setCidade, { autoCapitalize: 'words' })}
           {campo('Sobre seu trabalho', 'Conte brevemente sua experiência', descricao, setDescricao, { multiline: true })}
-          {mensagem ? <Text style={styles.mensagem} accessibilityLiveRegion="polite">{mensagem}</Text> : null}
           <Pressable accessibilityRole="button" onPress={enviar} disabled={enviando} style={[styles.botao, enviando && styles.botaoDesativado]}>
             <Text style={styles.botaoTexto}>{enviando ? 'Criando perfil...' : 'Criar perfil de prestador  →'}</Text>
           </Pressable>

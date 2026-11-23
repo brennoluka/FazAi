@@ -17,19 +17,18 @@ function mensagemErro(erro) {
 }
 
 export default function VerificacaoEmail({ usuario, onVerificado }) {
-  const { colors, darkMode, textScale } = useApp();
+  const { colors, darkMode, textScale, mostrarFeedback } = useApp();
   const estilos = makeStyles(colors, textScale);
   const uidEnviado = useRef(null);
   const [enviando, setEnviando] = useState(false);
   const [checando, setChecando] = useState(false);
-  const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState(false);
 
   async function enviarLink() {
     const usuarioAtual = auth?.currentUser || usuario;
     if (!usuarioAtual) {
       setErro(true);
-      setMensagem('Sua sessão expirou. Entre novamente para continuar.');
+      mostrarFeedback('Verificação de e-mail', 'Sua sessão expirou. Entre novamente para continuar.', 'info');
       return;
     }
 
@@ -38,10 +37,10 @@ export default function VerificacaoEmail({ usuario, onVerificado }) {
     try {
       auth.languageCode = 'pt-BR';
       await sendEmailVerification(usuarioAtual);
-      setMensagem(`Enviamos um link de confirmação para ${usuarioAtual.email}. Confira também a pasta de spam.`);
+      mostrarFeedback('Verificação de e-mail', `Enviamos um link de confirmação para ${usuarioAtual.email}. Confira também a pasta de spam.`, 'info');
     } catch (erroEnvio) {
       setErro(true);
-      setMensagem(mensagemErro(erroEnvio));
+      mostrarFeedback('Verificação de e-mail', mensagemErro(erroEnvio), 'info');
     } finally {
       setEnviando(false);
     }
@@ -57,7 +56,7 @@ export default function VerificacaoEmail({ usuario, onVerificado }) {
     const usuarioAtual = auth?.currentUser;
     if (!usuarioAtual) {
       setErro(true);
-      setMensagem('Sua sessão expirou. Entre novamente para continuar.');
+      mostrarFeedback('Verificação de e-mail', 'Sua sessão expirou. Entre novamente para continuar.', 'info');
       return;
     }
 
@@ -68,11 +67,11 @@ export default function VerificacaoEmail({ usuario, onVerificado }) {
       if (usuarioAtual.emailVerified) {
         onVerificado();
       } else {
-        setMensagem('Ainda não encontramos a confirmação. Abra o link enviado ao seu e-mail e tente novamente.');
+        mostrarFeedback('Verificação de e-mail', 'Ainda não encontramos a confirmação. Abra o link enviado ao seu e-mail e tente novamente.', 'info');
       }
     } catch (erroConsulta) {
       setErro(true);
-      setMensagem(mensagemErro(erroConsulta));
+      mostrarFeedback('Verificação de e-mail', mensagemErro(erroConsulta), 'info');
     } finally {
       setChecando(false);
     }
@@ -83,7 +82,7 @@ export default function VerificacaoEmail({ usuario, onVerificado }) {
       await signOut(auth);
     } catch (_erro) {
       setErro(true);
-      setMensagem('Não foi possível sair agora. Tente novamente.');
+      mostrarFeedback('Verificação de e-mail', 'Não foi possível sair agora. Tente novamente.', 'info');
     }
   }
 
@@ -104,8 +103,6 @@ export default function VerificacaoEmail({ usuario, onVerificado }) {
             Abra o link que enviamos. Depois, volte ao app e toque em “Já confirmei meu e-mail”.
           </Text>
         </View>
-
-        {mensagem ? <Text style={[estilos.mensagem, erro && estilos.mensagemErro]} accessibilityLiveRegion="polite">{mensagem}</Text> : null}
 
         <Pressable
           accessibilityRole="button"
