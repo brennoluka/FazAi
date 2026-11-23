@@ -13,7 +13,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import { auth, firebaseConfigurado } from '../firebase';
 import { salvarDadosContato } from '../dados/perfilUsuario';
 import Logo from '../componentes/Logo';
@@ -27,7 +27,7 @@ function celularValido(valor) {
 
 export default function CadastroPrestador() {
   const navigation = useNavigation();
-  const { colors, textScale, marcarPrestador } = useApp();
+  const { colors, textScale, marcarPrestador, mostrarFeedback } = useApp();
   const [nome, setNome] = useState('');
   const [endereco, setEndereco] = useState('');
   const [celular, setCelular] = useState('');
@@ -40,7 +40,7 @@ export default function CadastroPrestador() {
   const styles = makeStyles(colors, textScale);
 
   async function enviar() {
-    if (!firebaseConfigurado) {
+    if (!firebaseConfigurado || !auth) {
       mostrarFeedback('Confira seus dados', 'Configure o Firebase para ativar o cadastro.', 'erro');
       return;
     }
@@ -77,6 +77,7 @@ export default function CadastroPrestador() {
     try {
       const credencial = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), senha);
       await updateProfile(credencial.user, { displayName: nome.trim() });
+      await sendEmailVerification(credencial.user);
       await salvarDadosContato(credencial.user.uid, { endereco, celular });
       await AsyncStorage.setItem(`fazai:provider:${credencial.user.uid}`, JSON.stringify({
         tipo: 'prestador',
@@ -94,8 +95,12 @@ export default function CadastroPrestador() {
         mostrarFeedback('Confira seus dados', 'A senha precisa ter pelo menos 8 caracteres.', 'erro');
       } else if (error?.code === 'auth/network-request-failed') {
         mostrarFeedback('Confira seus dados', 'Não foi possível conectar. Verifique sua internet.', 'erro');
+      } else if (error?.code === 'auth/operation-not-allowed') {
+        mostrarFeedback('Cadastro indisponível', 'Ative o provedor E-mail/senha no Firebase Authentication.', 'erro');
+      } else if (error?.code === 'auth/too-many-requests') {
+        mostrarFeedback('Tente novamente mais tarde', 'O Firebase bloqueou temporariamente novas tentativas. Aguarde alguns minutos.', 'erro');
       } else {
-        mostrarFeedback('Confira seus dados', 'Não foi possível criar o perfil. Confira os dados e tente novamente.', 'erro');
+        mostrarFeedback('Não foi possível criar o perfil', error?.message || 'Confira os dados e tente novamente.', 'erro');
       }
     } finally {
       setEnviando(false);
@@ -111,7 +116,7 @@ export default function CadastroPrestador() {
           placeholder={placeholder}
           placeholderTextColor={colors.muted}
           value={value}
-          onChangeText={(texto) => { setValue(texto); mostrarFeedback('Confira seus dados', '', 'erro'); }}
+          onChangeText={setValue}
           style={[styles.input, opcoes.multiline && styles.textarea]}
           multiline={Boolean(opcoes.multiline)}
           textAlignVertical={opcoes.multiline ? 'top' : 'center'}
