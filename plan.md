@@ -29,18 +29,26 @@ Revisar a experiência do app Expo com foco em telas mais atrativas, acessibilid
 8. Enviar confirmação de e-mail após cadastro e bloquear as telas autenticadas até a conta ser confirmada; permitir verificar novamente e reenviar a mensagem.
 9. Validar bundle Web, dependências e navegação; sincronizar no GitHub quando solicitado.
 10. Nos dois cadastros, consultar o CEP no ViaCEP, preencher logradouro, bairro, cidade e UF, permitir revisar os campos e exigir o número antes de salvar o endereço.
+11. Selecionar a tela de perfil pelo tipo de conta; o prestador deve ver sua especialidade, região de atendimento, informações de contato e seus próprios anúncios.
+12. Permitir ao prestador criar anúncio com serviço, categoria, preço, descrição e cidade; associar anúncio ao UID da conta, persistir localmente e colocá-lo no início e na busca imediatamente.
+13. Manter os anúncios locais neste protótipo; não prometer sincronização entre aparelhos nem publicação em uma base compartilhada.
 
 ## Estrutura
 
-- `App.js`: navegação, feed, busca e publicação; controla o acesso autenticado e ainda não verificado.
-- `context/AppContext.js`: tema, acessibilidade e pedidos locais demonstrativos.
+- `App.js`: navegação, feed, busca e publicação; controla o acesso autenticado e ainda não verificado e seleciona o perfil da conta.
+- `context/AppContext.js`: tema, acessibilidade, pedidos e anúncios locais demonstrativos.
 - `componentes/Logo.js`: marca compartilhada.
 - `componentes/CampoEnderecoCep.js`: campo de endereço reutilizável com consulta e preenchimento ViaCEP.
+- `dados/perfilUsuario.js`: dados de contato do usuário, armazenados localmente por UID.
+- `dados/servicos.js`: anúncios de exemplo e criação do feed.
 - `dados/viacep.js`: validação de CEP e acesso JSON ao ViaCEP.
 - `telas/contratar.js`: seleção de dados, confirmação e pagamento demonstrativo.
 - `telas/pedidos.js`: acompanhamento e avaliação.
 - `telas/cadastroPrestador.js`: criação de conta de prestador e salvamento dos contatos.
+- `telas/acaoPrincipal.js`: formulário para cliente pedir ajuda ou prestador criar anúncio.
 - `telas/autenticacao.js`: acesso e cadastro de cliente com os dados de contato.
 - `telas/verificacaoEmail.js`: envio/reenvio do link e rechecagem do status de confirmação.
-- `telas/perfil.js`: conta, preferências e exibição dos dados salvos localmente.
+- `telas/perfil.js`: perfil do cliente, preferências e exibição dos dados salvos localmente.
+- `telas/perfilPrestadorConta.js`: painel privado do prestador e seus anúncios.
+- `telas/perfilPrestador.js`: perfil público do prestador aberto a partir de um anúncio.
 - `assets/fazai-logo-mark.png`: símbolo da nova marca.

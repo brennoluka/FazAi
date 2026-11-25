@@ -38,7 +38,18 @@ export function AppProvider({ children }) {
   function criarPedido(pedido) { salvarPedidos([{ ...pedido, id: `pedido-${Date.now()}`, status: 'aguardando_pagamento', criadoEm: new Date().toISOString() }, ...pedidos]); }
   function atualizarPedido(id, patch) { salvarPedidos(pedidos.map((pedido) => pedido.id === id ? { ...pedido, ...patch } : pedido)); }
   function criarNecessidade(necessidade) { const next = [{ ...necessidade, id: `necessidade-${Date.now()}`, criadoEm: new Date().toISOString(), status: 'aberta' }, ...necessidades]; setNecessidades(next); persist('fazai:needs', JSON.stringify(next)); }
-  function publicarServico(servico) { const next = [{ ...servico, id: `servico-${Date.now()}`, criadoEm: new Date().toISOString(), status: 'ativo' }, ...servicosPublicados]; setServicosPublicados(next); persist('fazai:published-services', JSON.stringify(next)); }
+  async function publicarServico(servico) {
+    const anuncio = {
+      ...servico,
+      id: `servico-${Date.now()}`,
+      criadoEm: new Date().toISOString(),
+      status: 'ativo',
+    };
+    const next = [anuncio, ...servicosPublicados];
+    await AsyncStorage.setItem('fazai:published-services', JSON.stringify(next));
+    setServicosPublicados(next);
+    return anuncio;
+  }
   function marcarPrestador(valor) { setPrestadorAtivo(Boolean(valor)); }
   function mostrarFeedback(titulo, mensagem, tipo = 'info', confirmar = null) { setFeedback({ titulo, mensagem, tipo, confirmar }); }
   function fecharFeedback() { setFeedback(null); }

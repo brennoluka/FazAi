@@ -6,6 +6,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { carregarDadosContato } from '../dados/perfilUsuario';
 import CabecalhoTela from '../componentes/CabecalhoTela';
+import PerfilPrestadorConta from './perfilPrestadorConta';
 import { useApp } from '../context/AppContext';
 
 function formatarData(data) {
@@ -22,7 +23,7 @@ function Preferencia({ titulo, descricao, valor, onChange, styles }) {
   return <View style={styles.preferencia}><View style={styles.preferenciaTexto}><Text style={styles.preferenciaTitulo}>{titulo}</Text><Text style={styles.preferenciaDescricao}>{descricao}</Text></View><Switch accessibilityLabel={titulo} value={valor} onValueChange={onChange} trackColor={{ false: '#777873', true: '#E86A45' }} thumbColor={valor ? '#FFFFFF' : '#F7F7F5'} /></View>;
 }
 
-export default function Perfil({ usuario }) {
+export default function Perfil({ usuario, isPrestador = false }) {
   const navigation = useNavigation();
   const { mostrarFeedback, colors, darkMode, altoContraste, textScale, alternarDarkMode, alternarContraste, alterarEscala } = useApp();
   const styles = makeStyles(colors, textScale);
@@ -49,6 +50,8 @@ export default function Perfil({ usuario }) {
       setSaindo(false);
     }
   }
+
+  if (usuario && isPrestador) return <PerfilPrestadorConta usuario={usuario} />;
 
   if (!usuario) {
     return (

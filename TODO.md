@@ -17,5 +17,8 @@ As melhorias anteriores permanecem concluídas. Esta rodada acrescenta as seguin
 - [x] Na tela de confirmação, permitir reenviar o link e atualizar o status depois que a pessoa conclua a confirmação; o celular é coletado, mas não recebe código de validação por SMS.
 - [x] Exibir endereço e celular salvos nas informações do perfil, quando disponíveis.
 - [x] Nos cadastros de cliente e prestador, aceitar um CEP de 8 dígitos e consultar `https://viacep.com.br/ws/{CEP}/json/`; preencher logradouro, bairro, cidade e UF, deixar os campos revisáveis, exigir número, aceitar complemento opcional e mostrar mensagens para CEP inválido/não encontrado ou falha de conexão.
+- [x] Exibir uma tela de perfil específica quando a conta autenticada for de prestador, com dados de atuação e acesso aos anúncios publicados.
+- [x] Permitir ao prestador criar um anúncio com nome do serviço, categoria, preço ou forma de cobrança, descrição e cidade; associar a publicação à conta do prestador e apresentá-la imediatamente no início e na busca.
+- [x] Exibir no perfil privado do prestador somente os anúncios associados ao UID daquela conta, com ação direta para criar outro anúncio.
 
-> Observação: o pagamento continua demonstrativo. O endereço do serviço e os endereços de cadastro consultam o ViaCEP. Endereço e celular de cadastro ficam no armazenamento local do aparelho e não sincronizam entre dispositivos. A confirmação de contato implementada nesta rodada é apenas por e-mail; não há envio de SMS.
+> Observação: o pagamento continua demonstrativo. O endereço do serviço e os endereços de cadastro consultam o ViaCEP. Endereço, celular e anúncios de prestadores ficam no armazenamento local do aparelho e não sincronizam entre dispositivos. A confirmação de contato implementada nesta rodada é apenas por e-mail; não há envio de SMS.
