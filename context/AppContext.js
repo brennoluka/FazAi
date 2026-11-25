@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AppContext = createContext(null);
@@ -16,6 +16,7 @@ export function AppProvider({ children }) {
   const [necessidades, setNecessidades] = useState([]);
   const [servicosPublicados, setServicosPublicados] = useState([]);
   const [prestadorAtivo, setPrestadorAtivo] = useState(false);
+  const prestadorVersionRef = useRef(0);
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
@@ -50,7 +51,10 @@ export function AppProvider({ children }) {
     setServicosPublicados(next);
     return anuncio;
   }
-  function marcarPrestador(valor) { setPrestadorAtivo(Boolean(valor)); }
+  function marcarPrestador(valor) {
+    prestadorVersionRef.current += 1;
+    setPrestadorAtivo(Boolean(valor));
+  }
   function mostrarFeedback(titulo, mensagem, tipo = 'info', confirmar = null) { setFeedback({ titulo, mensagem, tipo, confirmar }); }
   function fecharFeedback() { setFeedback(null); }
 
@@ -58,7 +62,7 @@ export function AppProvider({ children }) {
     const base = palettes[darkMode ? 'dark' : 'light'];
     return altoContraste ? { ...base, background: darkMode ? '#000000' : '#FFFFFF', surface: darkMode ? '#080808' : '#FFFFFF', text: '#FFFFFF', muted: '#FFFFFF', border: '#FFFFFF' } : base;
   }, [darkMode, altoContraste]);
-  const value = useMemo(() => ({ darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, feedback, alternarDarkMode, alternarContraste, alterarEscala, criarPedido, atualizarPedido, criarNecessidade, publicarServico, marcarPrestador, mostrarFeedback, fecharFeedback }), [darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, feedback]);
+  const value = useMemo(() => ({ darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, prestadorVersionRef, feedback, alternarDarkMode, alternarContraste, alterarEscala, criarPedido, atualizarPedido, criarNecessidade, publicarServico, marcarPrestador, mostrarFeedback, fecharFeedback }), [darkMode, altoContraste, textScale, colors, pedidos, necessidades, servicosPublicados, prestadorAtivo, feedback]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 

@@ -52,3 +52,10 @@ Revisar a experiência do app Expo com foco em telas mais atrativas, acessibilid
 - `telas/perfilPrestadorConta.js`: painel privado do prestador e seus anúncios.
 - `telas/perfilPrestador.js`: perfil público do prestador aberto a partir de um anúncio.
 - `assets/fazai-logo-mark.png`: símbolo da nova marca.
+
+
+## Correção do fluxo de conta de prestador
+
+- Permitir que uma pessoa já autenticada transforme a própria conta de cliente em conta de prestador, sem tentar criar outra conta com o mesmo e-mail.
+- Para quem estiver desconectado, permitir entrar com e-mail/senha já cadastrados e então completar os dados profissionais na mesma conta.
+- Carregar o tipo de conta antes de liberar a navegação e impedir que uma resposta assíncrona antiga do listener de autenticação sobrescreva o tipo atualizado durante o cadastro.

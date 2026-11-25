@@ -20,5 +20,8 @@ As melhorias anteriores permanecem concluídas. Esta rodada acrescenta as seguin
 - [x] Exibir uma tela de perfil específica quando a conta autenticada for de prestador, com dados de atuação e acesso aos anúncios publicados.
 - [x] Permitir ao prestador criar um anúncio com nome do serviço, categoria, preço ou forma de cobrança, descrição e cidade; associar a publicação à conta do prestador e apresentá-la imediatamente no início e na busca.
 - [x] Exibir no perfil privado do prestador somente os anúncios associados ao UID daquela conta, com ação direta para criar outro anúncio.
+- [x] Permitir que uma pessoa autenticada com conta de cliente use a própria conta para criar um perfil de prestador, sem tentar registrar o mesmo e-mail novamente.
+- [x] Para quem não estiver autenticado, permitir entrar com uma conta existente no fluxo de prestador e salvar o perfil profissional nessa mesma conta.
+- [x] Carregar o papel da conta antes de mostrar as telas autenticadas; uma leitura assíncrona antiga não pode substituir a decisão de prestador feita após o cadastro.
 
 > Observação: o pagamento continua demonstrativo. O endereço do serviço e os endereços de cadastro consultam o ViaCEP. Endereço, celular e anúncios de prestadores ficam no armazenamento local do aparelho e não sincronizam entre dispositivos. A confirmação de contato implementada nesta rodada é apenas por e-mail; não há envio de SMS.

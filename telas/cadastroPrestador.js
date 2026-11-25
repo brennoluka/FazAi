@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -13,9 +13,9 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, firebaseConfigurado } from '../firebase';
-import { salvarDadosContato } from '../dados/perfilUsuario';
+import { carregarDadosContato, salvarDadosContato } from '../dados/perfilUsuario';
 import Logo from '../componentes/Logo';
 import CampoEnderecoCep from '../componentes/CampoEnderecoCep';
 import { useApp } from '../context/AppContext';
@@ -25,23 +25,55 @@ function celularValido(valor) {
   return digitos.length >= 10 && digitos.length <= 13;
 }
 
+function mensagemDeErro(error) {
+  if (['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(error?.code)) {
+    return 'Esta conta já existe. Confira a senha da conta para entrar e ativar o perfil de prestador.';
+  }
+  if (error?.code === 'auth/email-already-in-use') {
+    return 'Este e-mail já tem uma conta. Entre com ela para criar o perfil de prestador.';
+  }
+  if (error?.code === 'auth/invalid-email') return 'Digite um e-mail válido.';
+  if (error?.code === 'auth/weak-password') return 'A senha precisa ter pelo menos 8 caracteres.';
+  if (error?.code === 'auth/network-request-failed') return 'Não foi possível conectar. Verifique sua internet.';
+  if (error?.code === 'auth/operation-not-allowed') return 'Ative o provedor E-mail/senha no Firebase Authentication.';
+  if (error?.code === 'auth/too-many-requests') return 'O Firebase bloqueou temporariamente novas tentativas. Aguarde alguns minutos.';
+  return error?.message || 'Confira os dados e tente novamente.';
+}
+
 export default function CadastroPrestador() {
   const navigation = useNavigation();
   const { colors, textScale, marcarPrestador, mostrarFeedback } = useApp();
-  const [nome, setNome] = useState('');
+  const contaConectadaInicial = auth?.currentUser;
+  const [nome, setNome] = useState(contaConectadaInicial?.displayName || '');
   const [endereco, setEndereco] = useState('');
   const [celular, setCelular] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(contaConectadaInicial?.email || '');
   const [senha, setSenha] = useState('');
   const [categoria, setCategoria] = useState('');
   const [cidade, setCidade] = useState('');
   const [descricao, setDescricao] = useState('');
   const [enviando, setEnviando] = useState(false);
   const styles = makeStyles(colors, textScale);
+  const emailNormalizado = email.trim().toLowerCase();
+  const emailDaContaConectada = contaConectadaInicial?.email?.trim().toLowerCase();
+  const usandoContaConectada = Boolean(emailDaContaConectada && emailDaContaConectada === emailNormalizado);
+
+  useEffect(() => {
+    let ativo = true;
+    if (contaConectadaInicial?.uid) {
+      carregarDadosContato(contaConectadaInicial.uid).then((dados) => {
+        if (!ativo || !dados) return;
+        setEndereco(dados.endereco || '');
+        setCelular(dados.celular || '');
+      });
+    }
+    return () => { ativo = false; };
+  }, []);
 
   async function enviar() {
+    if (enviando) return;
     if (!firebaseConfigurado || !auth) {
-      mostrarFeedback('Confira seus dados', 'Configure o Firebase para ativar o cadastro.', 'erro');
+      mostrarFeedback('Cadastro indisponível', 'Configure o Firebase para ativar o cadastro.', 'erro');
       return;
     }
     if (!nome.trim()) {
@@ -56,12 +88,12 @@ export default function CadastroPrestador() {
       mostrarFeedback('Confira seus dados', 'Digite um número de celular válido com DDD.', 'erro');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalizado)) {
       mostrarFeedback('Confira seus dados', 'Digite um e-mail válido, como voce@email.com.', 'erro');
       return;
     }
-    if (senha.length < 8) {
-      mostrarFeedback('Confira seus dados', 'A senha precisa ter pelo menos 8 caracteres.', 'erro');
+    if (!usandoContaConectada && senha.length < 8) {
+      mostrarFeedback('Confira seus dados', 'Digite a senha da conta ou crie uma senha com pelo menos 8 caracteres.', 'erro');
       return;
     }
     if (!categoria.trim()) {
@@ -75,33 +107,44 @@ export default function CadastroPrestador() {
 
     setEnviando(true);
     try {
-      const credencial = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), senha);
-      await updateProfile(credencial.user, { displayName: nome.trim() });
-      await sendEmailVerification(credencial.user);
-      await salvarDadosContato(credencial.user.uid, { endereco, celular });
-      await AsyncStorage.setItem(`fazai:provider:${credencial.user.uid}`, JSON.stringify({
+      let usuarioConta = null;
+      const contaAtual = auth.currentUser;
+      if (contaAtual) {
+        if (contaAtual.email?.trim().toLowerCase() !== emailNormalizado) {
+          mostrarFeedback('Use a conta conectada', `Você já está conectado como ${contaAtual.email}. Use esse e-mail para adicionar o perfil de prestador ou saia antes de criar outra conta.`, 'info');
+          return;
+        }
+        usuarioConta = contaAtual;
+      } else {
+        try {
+          const credencial = await createUserWithEmailAndPassword(auth, emailNormalizado, senha);
+          usuarioConta = credencial.user;
+        } catch (errorCriacao) {
+          if (errorCriacao?.code !== 'auth/email-already-in-use') throw errorCriacao;
+          const credencial = await signInWithEmailAndPassword(auth, emailNormalizado, senha);
+          usuarioConta = credencial.user;
+        }
+      }
+
+      if (usuarioConta.displayName !== nome.trim()) {
+        await updateProfile(usuarioConta, { displayName: nome.trim() });
+      }
+      await salvarDadosContato(usuarioConta.uid, { endereco, celular });
+      await AsyncStorage.setItem(`fazai:provider:${usuarioConta.uid}`, JSON.stringify({
         tipo: 'prestador',
         categoria: categoria.trim(),
         cidade: cidade.trim(),
         descricao: descricao.trim(),
       }));
       marcarPrestador(true);
-    } catch (error) {
-      if (error?.code === 'auth/email-already-in-use') {
-        mostrarFeedback('Confira seus dados', 'Este e-mail já está cadastrado. Tente entrar.', 'erro');
-      } else if (error?.code === 'auth/invalid-email') {
-        mostrarFeedback('Confira seus dados', 'Digite um e-mail válido.', 'erro');
-      } else if (error?.code === 'auth/weak-password') {
-        mostrarFeedback('Confira seus dados', 'A senha precisa ter pelo menos 8 caracteres.', 'erro');
-      } else if (error?.code === 'auth/network-request-failed') {
-        mostrarFeedback('Confira seus dados', 'Não foi possível conectar. Verifique sua internet.', 'erro');
-      } else if (error?.code === 'auth/operation-not-allowed') {
-        mostrarFeedback('Cadastro indisponível', 'Ative o provedor E-mail/senha no Firebase Authentication.', 'erro');
-      } else if (error?.code === 'auth/too-many-requests') {
-        mostrarFeedback('Tente novamente mais tarde', 'O Firebase bloqueou temporariamente novas tentativas. Aguarde alguns minutos.', 'erro');
-      } else {
-        mostrarFeedback('Não foi possível criar o perfil', error?.message || 'Confira os dados e tente novamente.', 'erro');
+
+      if (usuarioConta.emailVerified) {
+        mostrarFeedback('Perfil de prestador ativado', 'Sua conta agora tem uma página profissional. Você já pode criar e publicar seus anúncios.', 'sucesso');
+        navigation.navigate('Principal', { screen: 'Perfil' });
       }
+      // Contas ainda não confirmadas seguem para a tela de verificação, que envia o link.
+    } catch (error) {
+      mostrarFeedback('Não foi possível ativar o perfil', mensagemDeErro(error), 'erro');
     } finally {
       setEnviando(false);
     }
@@ -132,18 +175,24 @@ export default function CadastroPrestador() {
         <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Logo />
           <Text style={styles.eyebrow}>PARA QUEM FAZ ACONTECER</Text>
-          <Text style={styles.titulo}>Crie seu perfil de prestador.</Text>
-          <Text style={styles.descricao}>Mostre seu trabalho, receba pedidos e construa sua reputação no FazAí.</Text>
+          <Text style={styles.titulo}>{contaConectadaInicial ? 'Ative seu perfil profissional.' : 'Crie seu perfil de prestador.'}</Text>
+          <Text style={styles.descricao}>
+            {contaConectadaInicial
+              ? 'Vamos adicionar os dados profissionais à sua conta atual, sem criar outro usuário.'
+              : 'Se você já tem conta, use o mesmo e-mail e senha para vinculá-la como prestador.'}
+          </Text>
           {campo('Seu nome ou negócio', 'Ex.: Dani Oliveira', nome, setNome, { autoCapitalize: 'words', textContentType: 'name' })}
           <CampoEnderecoCep onChangeText={setEndereco} />
           {campo('Seu celular com DDD', '(11) 91234-5678', celular, setCelular, { keyboardType: 'phone-pad', textContentType: 'telephoneNumber' })}
-          {campo('Seu e-mail', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', autoCapitalize: 'none', textContentType: 'emailAddress' })}
-          {campo('Senha', 'Pelo menos 8 caracteres', senha, setSenha, { secureTextEntry: true, textContentType: 'newPassword' })}
+          {campo('E-mail da conta', 'voce@email.com', email, setEmail, { keyboardType: 'email-address', autoCapitalize: 'none', textContentType: 'emailAddress', editable: !contaConectadaInicial?.email })}
+          {usandoContaConectada
+            ? <Text style={styles.notaConta}>Usaremos sua conta já conectada; não é preciso informar a senha novamente.</Text>
+            : campo('Senha da conta', 'Senha da conta existente ou nova senha', senha, setSenha, { secureTextEntry: true, textContentType: 'password' })}
           {campo('Especialidade', 'Ex.: limpeza residencial', categoria, setCategoria)}
           {campo('Cidade onde atende', 'Ex.: São Paulo, SP', cidade, setCidade, { autoCapitalize: 'words' })}
           {campo('Sobre seu trabalho', 'Conte brevemente sua experiência', descricao, setDescricao, { multiline: true })}
           <Pressable accessibilityRole="button" onPress={enviar} disabled={enviando} style={[styles.botao, enviando && styles.botaoDesativado]}>
-            <Text style={styles.botaoTexto}>{enviando ? 'Criando perfil...' : 'Criar perfil de prestador  →'}</Text>
+            <Text style={styles.botaoTexto}>{enviando ? 'Salvando perfil...' : contaConectadaInicial ? 'Ativar perfil de prestador  →' : 'Criar ou vincular perfil  →'}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={() => navigation.goBack()} style={styles.voltar}>
             <Text style={styles.voltarTexto}>Voltar</Text>
@@ -166,7 +215,7 @@ const makeStyles = (c, scale) => StyleSheet.create({
   rotulo: { marginBottom: 7, color: c.text, fontSize: 12 * scale, fontWeight: '800' },
   input: { minHeight: 50, paddingHorizontal: 13, borderWidth: 1, borderColor: c.border, borderRadius: 12, color: c.text, backgroundColor: c.surface, fontSize: 14 * scale },
   textarea: { minHeight: 86, paddingTop: 13 },
-  mensagem: { marginTop: 16, color: c.coral, fontSize: 13 * scale, lineHeight: 19 * scale },
+  notaConta: { marginTop: 9, color: c.muted, fontSize: 11 * scale, lineHeight: 16 * scale },
   botao: { minHeight: 54, alignItems: 'center', justifyContent: 'center', marginTop: 22, borderRadius: 14, backgroundColor: c.lime },
   botaoDesativado: { opacity: 0.6 },
   botaoTexto: { color: '#232323', fontSize: 14 * scale, fontWeight: '900' },

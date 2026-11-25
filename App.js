@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { FlatList, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -62,7 +62,9 @@ function AppContent() {
   const [usuario, setUsuario] = useState(null);
   const [emailVerificado, setEmailVerificado] = useState(false);
   const [carregando, setCarregando] = useState(true);
-  const { colors, prestadorAtivo, marcarPrestador, feedback, fecharFeedback } = useApp();
+  const [papelCarregando, setPapelCarregando] = useState(false);
+  const { colors, prestadorAtivo, marcarPrestador, prestadorVersionRef, feedback, fecharFeedback } = useApp();
+  const authEventRef = useRef(0);
 
   useEffect(() => {
     if (!auth) {
@@ -70,17 +72,34 @@ function AppContent() {
       return undefined;
     }
 
-    return onAuthStateChanged(auth, async (usuarioAtual) => {
+    const unsubscribe = onAuthStateChanged(auth, async (usuarioAtual) => {
+      const authEvent = ++authEventRef.current;
       setUsuario(usuarioAtual);
       setEmailVerificado(Boolean(usuarioAtual?.emailVerified));
+      setPapelCarregando(Boolean(usuarioAtual));
+      marcarPrestador(false);
+      const versaoDoPapel = prestadorVersionRef.current;
       if (usuarioAtual) {
-        const cadastro = await AsyncStorage.getItem(`fazai:provider:${usuarioAtual.uid}`);
-        marcarPrestador(Boolean(cadastro));
-      } else {
-        marcarPrestador(false);
+        try {
+          const cadastro = await AsyncStorage.getItem(`fazai:provider:${usuarioAtual.uid}`);
+          if (authEvent !== authEventRef.current) return;
+          if (prestadorVersionRef.current === versaoDoPapel && cadastro) {
+            marcarPrestador(true);
+          }
+        } catch (_erro) {
+          // Sem perfil local, a conta permanece no modo cliente.
+        }
       }
-      setCarregando(false);
+      if (authEvent === authEventRef.current) {
+        setPapelCarregando(false);
+        setCarregando(false);
+      }
     });
+
+    return () => {
+      authEventRef.current += 1;
+      unsubscribe();
+    };
   }, []);
 
   if (carregando) {
@@ -113,6 +132,11 @@ function AppContent() {
         <Stack.Screen name="Pedidos" component={Pedidos} />
       </Stack.Navigator>
     </NavigationContainer>
+    {papelCarregando ? (
+      <View pointerEvents="auto" style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+        <Text style={{ color: colors.text }}>Carregando sua conta...</Text>
+      </View>
+    ) : null}
     <ModalMensagem visible={Boolean(feedback)} titulo={feedback?.titulo} mensagem={feedback?.mensagem} tipo={feedback?.tipo} onClose={fecharFeedback} onConfirm={feedback?.confirmar} textoConfirmar={feedback?.confirmar ? 'Criar conta' : 'Entendi'} />
     </>
   );
